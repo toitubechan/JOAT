@@ -1,9 +1,159 @@
-:root {
-  --font-display:
-    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
-    Segoe UI Symbol, Noto Color Emoji;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
-  --font-serif: Georgia, 'Times New Roman', serif;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+@import "nativewind/theme";
+
+/* =========================================================================
+   JOAT design tokens — single source of truth for NativeWind styling.
+   Mirrors src/theme/* (the TS escape-hatch used in StyleSheet/inline contexts).
+   Never hardcode a hex, font size, or radius in a className — add it here first.
+   ========================================================================= */
+@theme {
+  /* ---- Colors: primary ------------------------------------------------- */
+  --color-amber: #ffb020;
+  --color-amber-deep: #f59300;
+  --color-amber-pressed: #e08400;
+
+  --color-teal: #2ec4b6;
+  --color-teal-bg: #16322f;
+  --color-teal-border: #1f4f4b;
+  --color-teal-text: #7fe3da;
+
+  --color-ink: #0f1320; /* app background */
+
+  /* ---- Colors: dark surfaces ------------------------------------------- */
+  --color-surface: #1b2234;
+  --color-surface-raised: #222a40;
+  --color-line: #2a3349; /* borders ("border" is a tailwind keyword) */
+  --color-tabbar: #161b29;
+
+  /* ---- Colors: text on dark -------------------------------------------- */
+  --color-txt: #ffffff;
+  --color-txt-secondary: #a8b0c3;
+  --color-txt-muted: #7c859b;
+  --color-txt-onamber: #131726;
+
+  /* ---- Colors: semantic ------------------------------------------------ */
+  --color-success: #22c55e;
+  --color-success-bg: #10271a;
+  --color-success-border: #1e4d32;
+  --color-success-text: #a9e8c3;
+
+  --color-danger: #ff4d4f;
+  --color-danger-bg: #2a1414;
+  --color-danger-border: #5c1e1e;
+
+  --color-streak: #ff7a00;
+
+  --color-coin: #ffd338;
+  --color-coin-bg: #3a2f14;
+  --color-coin-border: #5c4a1e;
+
+  --color-info: #4d8bff;
+
+  /* ---- Colors: per-category icon tints + tile backgrounds -------------- */
+  --color-cat-money: #22c55e;
+  --color-cat-money-bg: #16321f;
+  --color-cat-cooking: #ff7a00;
+  --color-cat-cooking-bg: #33230f;
+  --color-cat-science: #4d8bff;
+  --color-cat-science-bg: #15233d;
+  --color-cat-diy: #ffb020;
+  --color-cat-diy-bg: #33290f;
+  --color-cat-mindfulness: #2ec4b6;
+  --color-cat-mindfulness-bg: #16322f;
+  --color-cat-health: #ff4d4f;
+  --color-cat-health-bg: #321616;
+  --color-cat-history: #b07cff;
+  --color-cat-history-bg: #241a38;
+  --color-cat-safety: #4d8bff;
+  --color-cat-safety-bg: #15233d;
+
+  /* ---- Typography: Poppins families (loaded in app/_layout) ------------ */
+  /* Weights are separate TTF families (not font-weight), so each utility
+     maps to its own file: font-sans / font-medium / font-semibold / font-bold. */
+  --font-sans: "Poppins-Regular";
+  --font-medium: "Poppins-Medium";
+  --font-semibold: "Poppins-SemiBold";
+  --font-bold: "Poppins-Bold";
+
+  /* ---- Typography: type scale  [size / line-height] -------------------- */
+  --text-h1: 32px; /* feed card title (Bold) */
+  --text-h1--line-height: 38px;
+  --text-h2: 24px; /* section title (SemiBold) */
+  --text-h2--line-height: 31px;
+  --text-h3: 20px; /* card / module title (SemiBold) */
+  --text-h3--line-height: 26px;
+  --text-h4: 16px; /* subheading (Medium) */
+  --text-h4--line-height: 22px;
+  --text-body-lg: 16px; /* feed card body (Regular, airy) */
+  --text-body-lg--line-height: 28px;
+  --text-body: 14px; /* body text (Regular) */
+  --text-body--line-height: 22px;
+  --text-body-sm: 13px; /* supporting text (Regular) */
+  --text-body-sm--line-height: 21px;
+  --text-caption: 11px; /* labels, meta, chips (Medium) */
+  --text-caption--line-height: 15px;
+
+  /* ---- Radii ----------------------------------------------------------- */
+  --radius-tile: 13px; /* icon tiles */
+  --radius-input: 16px; /* inputs, list items, social buttons */
+  --radius-card: 18px; /* category cards, quiz options, banners */
+  --radius-hero: 22px; /* daily-goal / continue-learning cards */
+
+  /* ---- Spacing (4pt grid extras) --------------------------------------- */
+  --spacing-screen: 24px; /* default horizontal screen padding */
+  --spacing-screen-tight: 22px;
+  --spacing-tab-h: 76px; /* tab bar height */
+  --spacing-btn-h: 56px; /* primary button height */
+  --spacing-input-h: 64px;
+  --spacing-rail-btn: 48px; /* feed save/share round buttons */
+  --spacing-icon-tile: 42px;
+}
+
+/* Android-only platform fonts. `--font-sans` intentionally stays the Poppins
+   value from @theme above (this is an Android-only app). */
+@media android {
+  :root {
+    --font-mono: monospace;
+    --font-rounded: normal;
+    --font-serif: serif;
+  }
+}
+
+/* =========================================================================
+   Foundational component utilities (BEM-style).
+   Keep this list small — only design-system primitives reused everywhere.
+   Add a new one when a pattern genuinely repeats, not before.
+   ========================================================================= */
+
+/* block: screen — full-bleed app background container */
+@utility screen {
+  @apply flex-1 bg-ink;
+}
+
+/* block: card — standard raised surface */
+@utility card {
+  @apply rounded-card bg-surface;
+}
+
+/* card--raised modifier — elevated surface (e.g. menus, sheets) */
+@utility card-raised {
+  @apply rounded-card bg-surface-raised;
+}
+
+/* block: divider — 1px hairline rule */
+@utility divider {
+  @apply h-px w-full bg-line;
+}
+
+/* block: chip — caption pill (labels, meta, tags) */
+@utility chip {
+  @apply flex-row items-center gap-1 rounded-full bg-surface px-3 py-1.5;
+}
+
+/* block: icon-tile — square rounded tile that centers an icon */
+@utility icon-tile {
+  @apply h-icon-tile w-icon-tile items-center justify-center rounded-tile;
 }
