@@ -12,6 +12,10 @@ import streakFire from "../../assets/images/streak-fire.png";
 import treasure from "../../assets/images/treasure.png";
 import earth from "../../assets/images/earth.png";
 
+// Brand logo for social auth. SVG renders through expo-image (Android-supported)
+// just like the raster assets above, so it stays in this one import object.
+import googleLogo from "../../assets/images/google.svg";
+
 export const images = {
   mascotLogo,
   mascotWelcome,
@@ -19,6 +23,7 @@ export const images = {
   streakFire,
   treasure,
   earth,
+  googleLogo,
 } as const;
 
 export type ImageKey = keyof typeof images;

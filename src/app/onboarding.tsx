@@ -76,9 +76,9 @@ export default function Onboarding() {
             />
           </View>
 
-          {/* Get Started */}
+          {/* Get Started → account creation */}
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => router.push("/sign-up")}
             style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
           >
             <Text style={styles.buttonText}>Get Started</Text>
