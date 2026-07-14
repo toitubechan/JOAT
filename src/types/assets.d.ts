@@ -27,3 +27,12 @@ declare module "*.svg" {
   const value: number;
   export default value;
 }
+
+/**
+ * Markdown lesson files are bundled as raw strings by `md-transformer.js`
+ * (registered in metro.config.js), so importing one yields its text content.
+ */
+declare module "*.md" {
+  const value: string;
+  export default value;
+}

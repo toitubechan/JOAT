@@ -11,7 +11,15 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type ImageSourcePropType,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
 
 import { images } from "@/constants/images";
 import { clerkErrorMessage } from "@/lib/clerkErrors";
@@ -83,11 +91,11 @@ function SocialButton({
   disabled,
   style,
 }: {
-  logo: number;
+  logo: ImageSourcePropType;
   label: string;
   onPress?: () => void;
   disabled?: boolean;
-  style?: object;
+  style?: StyleProp<ViewStyle>;
 }) {
   return (
     <Pressable

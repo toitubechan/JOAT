@@ -1,7 +1,12 @@
 Read AGENTS.md first and follow it strictly.
 
-Use the installed GetStream agent skills and the Stream docs to implement Stream audio call setup for the selected lesson flow. When a user taps a lesson, keep the existing Audio Lesson screen UI and add the ability to start, join, mute/unmute, and end an audio-only Stream call.
+Implement the **gamification system** end to end: coins, XP/level progression, and daily streak — the loop that makes the feed feel rewarding.
 
-Use Expo API routes for Stream token generation and call creation. Do not expose Stream secrets in the Expo app. Use the selected lesson, selected language, and logged-in Clerk user when creating the call/session.
+- Centralize all of it in the Zustand progress store (persisted via AsyncStorage). Define clear rules: XP per card/quiz, coins per correct answer, an XP→level curve, and a daily streak that increments once per active day and resets on a missed day (compare against the stored last-active date on launch).
+- Build reusable header components: `CoinBalance`, `XPBar`, `StreakBadge` (use `treasure` and `streak-fire` assets via the centralized images import).
+- Build the **Progress screen** (the Progress tab): level + XP bar, current streak, total coins, lessons/cards completed, and topic breakdown — read entirely from the store.
+- Make rewards feel good with cheap, instant animations: count-ups, a coin/XP pop on award, a streak flame pulse. Keep them performant; jank kills the loop.
 
-Preserve the existing UI and lesson data. Add clear loading, joined, error, muted, connecting, ended states and user info on audio ui.
+No backend — progress is local state plus AsyncStorage only.
+
+No dedicated mockup is provided for the Progress screen — follow the design system (01-design-system.png) and reuse the header components and visual language from the feed (06-feed-card-screen.png).

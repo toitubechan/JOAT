@@ -1,7 +1,12 @@
 Read AGENTS.md first and follow it strictly.
 
-Use the installed Vision Agents skill to create a Python service at vision-agent/ inside this repo. It is the AI language teacher, voice only, using OpenAI Realtime as the LLM and Stream Edge for transport.
+Integrate **AdMob** (free users only) via `react-native-google-mobile-ads`. This is a native module not bundled in Expo Go.
 
-Reuse STREAM_API_KEY/STREAM_API_SECRET from the parent .env and add OPENAI_API_KEY. By default the teacher always speaks English and teaches the selected language through English.
+- Recommend the library and ask for approval before installing (per Decision Making). It is not pre-approved.
+- Put all ad logic in `lib/ads.ts` behind a small typed API: `loadInterstitial()`, `showInterstitial()`, `loadRewarded()`, `showRewarded(onReward)`.
+- **Stub it for Expo Go development** — no-op `showAd()` implementations and a simulated reward callback — so the whole app runs end to end without a dev client. Only swap in the real native module when building a custom dev client (a pre-launch step).
+- **Rewarded ads** grant coins: credit coins only on the verified reward callback, never on ad open. Wire the granted coins through the Zustand progress store.
+- **Interstitials** show between lesson completions only — never mid-lesson, never on launch, never back-to-back; respect a sensible frequency cap. Preload; never block UI waiting on an ad.
+- Use **test ad unit IDs** in development. Never ship test IDs; never ship without IDs.
 
-Before writing any lifecycle code, verify the join and lifecycle method shapes against the installed SDK in this repo and confirm it starts cleanly.
+This replaces the live-AI teacher service — there is no Python service, Stream, or OpenAI in this app.

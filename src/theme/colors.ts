@@ -45,17 +45,8 @@ export const colors = {
   info: "#4D8BFF",
 } as const;
 
-/** Per-category icon tint + tile background (matches `cat-*` tokens in CSS). */
-export const categoryColors = {
-  money: { tint: "#22C55E", bg: "#16321F" },
-  cooking: { tint: "#FF7A00", bg: "#33230F" },
-  science: { tint: "#4D8BFF", bg: "#15233D" },
-  diy: { tint: "#FFB020", bg: "#33290F" },
-  mindfulness: { tint: "#2EC4B6", bg: "#16322F" },
-  health: { tint: "#FF4D4F", bg: "#321616" },
-  history: { tint: "#B07CFF", bg: "#241A38" },
-  safety: { tint: "#4D8BFF", bg: "#15233D" },
-} as const;
-
 export type ColorToken = keyof typeof colors;
-export type CategorySlug = keyof typeof categoryColors;
+
+// Category accent colors + the `CategorySlug` type are now data-driven (one per
+// distinct lesson category); they live in `@/data/categories` and are re-exported
+// from `@/theme` (see theme/index.ts) so existing imports keep working.

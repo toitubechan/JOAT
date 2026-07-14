@@ -178,7 +178,7 @@ The visual on each card is the hook — it carries most of the "make it land ins
 
 ## Styling Rules
 
-Use NativeWind tailwindcss classes for styling strictly. Don't use StyleSheet unless something cannot be styled with tailwindcss classnames.
+Prefer NativeWind tailwindcss classes for styling. Use `StyleSheet` or inline styles only for the specific cases listed in the **Style Exception Rules (Android-only)** table below — Android-only components where `className` isn't supported (SafeAreaView, Modal, TextInput, ScrollView/FlatList content styles, Animated.View, shadows/elevation, etc.). Outside those exceptions, always reach for NativeWind first.
 
 Prioritize clean, readable mobile UI.
 
@@ -421,3 +421,5 @@ Before every feature implementation:
 - Build clean, simple, teachable code.
 - Replicate UI exactly when designs are provided.
 - Draw diagrams procedurally with Skia; never fake them with images.
+
+After finishing each prompt update the notes.MD with any loose ends or things to be done by the user at some point.
