@@ -10,6 +10,7 @@ import { useCallback, useEffect } from "react";
 
 import {
   REWARDED_COIN_REWARD,
+  gatherAdsConsent,
   loadInterstitial,
   loadRewarded,
   showInterstitial,
@@ -22,11 +23,19 @@ export function useAds() {
   const isPro = useProgressStore((s) => s.isPro);
   const addCoins = useProgressStore((s) => s.addCoins);
 
-  // Preload both formats once so the first show is instant (never block UI to
-  // load). lib/ads re-preloads itself after each show.
+  // Gather GDPR/UMP consent (EEA) first, then preload both formats so the first
+  // show is instant (never block UI to load). lib/ads re-preloads after each show.
   useEffect(() => {
-    loadInterstitial();
-    loadRewarded();
+    let cancelled = false;
+    (async () => {
+      await gatherAdsConsent();
+      if (cancelled) return;
+      loadInterstitial();
+      loadRewarded();
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /**

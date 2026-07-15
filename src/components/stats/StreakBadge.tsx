@@ -15,7 +15,7 @@ import { Animated, Pressable, StyleSheet, Text, type StyleProp, type ViewStyle }
 import { images } from "@/constants/images";
 import { usePopOnIncrease, usePulse } from "@/hooks/animations";
 import { useProgressStore } from "@/store";
-import { colors, fontFamily, typeScale } from "@/theme";
+import { fontFamily, typeScale, useThemedStyles, type ThemeColors } from "@/theme";
 
 type StreakBadgeProps = {
   onPress?: () => void;
@@ -23,6 +23,7 @@ type StreakBadgeProps = {
 };
 
 export function StreakBadge({ onPress, style }: StreakBadgeProps) {
+  const styles = useThemedStyles(makeStyles);
   const streak = useProgressStore((s) => s.dailyStreak);
 
   // Breathe while the streak is alive, and pop on the day it grows.
@@ -46,23 +47,24 @@ export function StreakBadge({ onPress, style }: StreakBadgeProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  pill: {
-    height: 38,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: 999,
-  },
-  pressed: { opacity: 0.7 },
-  icon: { width: 18, height: 18 },
-  value: {
-    color: colors.streak,
-    fontFamily: fontFamily.semibold,
-    fontSize: typeScale.bodySm.size,
-  },
-});
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+    pill: {
+      height: 38,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingHorizontal: 12,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.line,
+      borderRadius: 999,
+    },
+    pressed: { opacity: 0.7 },
+    icon: { width: 18, height: 18 },
+    value: {
+      color: c.streak,
+      fontFamily: fontFamily.semibold,
+      fontSize: typeScale.bodySm.size,
+    },
+  });

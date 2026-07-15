@@ -25,7 +25,17 @@ import { images } from "@/constants/images";
 import { categories } from "@/data/topics";
 import { useAds } from "@/hooks/ads";
 import { useProgressStore } from "@/store";
-import { categoryColors, colors, fontFamily, radii, spacing, typeScale, type CategorySlug } from "@/theme";
+import {
+  categoryColors,
+  fontFamily,
+  radii,
+  spacing,
+  typeScale,
+  useTheme,
+  useThemedStyles,
+  type CategorySlug,
+  type ThemeColors,
+} from "@/theme";
 
 type UnlockCategoryModalProps = {
   /** Category to unlock; null when nothing is targeted (modal stays hidden). */
@@ -49,6 +59,8 @@ export function UnlockCategoryModal({
   // hides the ad button — a Pro user would never reach a locked category anyway.
   const { isPro, watchRewardedForCoins, rewardCoins } = useAds();
   const [watching, setWatching] = useState(false);
+  const styles = useThemedStyles(makeStyles);
+  const theme = useTheme();
 
   const category = slug ? categories.find((c) => c.slug === slug) : undefined;
   const cost = category?.coinCost ?? 0;
@@ -95,7 +107,7 @@ export function UnlockCategoryModal({
             accessibilityLabel="Close"
             style={({ pressed }) => [styles.close, pressed && styles.pressed]}
           >
-            <Image source={images.closeWhite} style={styles.closeIcon} contentFit="contain" />
+            <Image source={images.closeWhite} style={styles.closeIcon} contentFit="contain" tintColor={theme.txt} />
           </Pressable>
 
           <View style={[styles.tile, { backgroundColor: color.bg }]}>
@@ -137,7 +149,7 @@ export function UnlockCategoryModal({
                     watching && styles.watchAdBusy,
                   ]}
                 >
-                  <Image source={images.playWhite} style={styles.watchIcon} contentFit="contain" />
+                  <Image source={images.playWhite} style={styles.watchIcon} contentFit="contain" tintColor={theme.txt} />
                   <Text style={styles.watchLabel}>
                     {watching ? "Loading ad…" : `Watch a quick ad for +${rewardCoins} coins`}
                   </Text>
@@ -159,7 +171,8 @@ export function UnlockCategoryModal({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: "rgba(8,11,20,0.82)",
@@ -170,9 +183,9 @@ const styles = StyleSheet.create({
   card: {
     width: "100%",
     maxWidth: 380,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.hero,
     padding: 24,
     alignItems: "center",
@@ -201,14 +214,14 @@ const styles = StyleSheet.create({
   tileIcon: { width: 34, height: 34 },
 
   title: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h3.size,
     textAlign: "center",
     marginTop: 16,
   },
   subtitle: {
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
     lineHeight: typeScale.bodySm.lineHeight,
@@ -227,21 +240,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: colors.coinBg,
+    backgroundColor: c.coinBg,
     borderWidth: 1,
-    borderColor: colors.coinBorder,
+    borderColor: c.coinBorder,
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
   coinIcon: { width: 18, height: 18 },
   costText: {
-    color: colors.coin,
+    color: c.coin,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h4.size,
   },
   balance: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.bodySm.size,
   },
@@ -249,7 +262,7 @@ const styles = StyleSheet.create({
   cta: { width: "100%", marginTop: 18 },
 
   shortfall: {
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.body.size,
     textAlign: "center",
@@ -263,22 +276,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     borderRadius: radii.card,
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: c.surfaceRaised,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     marginTop: 14,
   },
   watchAdBusy: { opacity: 0.6 },
   watchIcon: { width: 18, height: 18 },
   watchLabel: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.body.size,
   },
 
   later: { marginTop: 16, paddingVertical: 6 },
   laterText: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.bodySm.size,
   },

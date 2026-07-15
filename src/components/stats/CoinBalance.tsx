@@ -15,7 +15,7 @@ import { Animated, Pressable, StyleSheet, Text, type StyleProp, type ViewStyle }
 import { images } from "@/constants/images";
 import { useCountUp, usePopOnIncrease } from "@/hooks/animations";
 import { useProgressStore } from "@/store";
-import { colors, fontFamily, typeScale } from "@/theme";
+import { fontFamily, typeScale, useThemedStyles, type ThemeColors } from "@/theme";
 
 type CoinBalanceProps = {
   onPress?: () => void;
@@ -23,6 +23,7 @@ type CoinBalanceProps = {
 };
 
 export function CoinBalance({ onPress, style }: CoinBalanceProps) {
+  const styles = useThemedStyles(makeStyles);
   const coins = useProgressStore((s) => s.coins);
   const display = useCountUp(coins);
   const scale = usePopOnIncrease(coins);
@@ -43,23 +44,24 @@ export function CoinBalance({ onPress, style }: CoinBalanceProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  pill: {
-    height: 38,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: 999,
-  },
-  pressed: { opacity: 0.7 },
-  icon: { width: 18, height: 18 },
-  value: {
-    color: colors.coin,
-    fontFamily: fontFamily.semibold,
-    fontSize: typeScale.bodySm.size,
-  },
-});
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+    pill: {
+      height: 38,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingHorizontal: 12,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.line,
+      borderRadius: 999,
+    },
+    pressed: { opacity: 0.7 },
+    icon: { width: 18, height: 18 },
+    value: {
+      color: c.coin,
+      fontFamily: fontFamily.semibold,
+      fontSize: typeScale.bodySm.size,
+    },
+  });

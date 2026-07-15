@@ -17,35 +17,72 @@ import { StatusBar } from "expo-status-bar";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { LessonListItem, type LessonStatus } from "@/components/home/LessonListItem";
 import { ProgressBar } from "@/components/ProgressBar";
 import { CoinBalance } from "@/components/stats/CoinBalance";
 import { StreakBadge } from "@/components/stats/StreakBadge";
 import { XPBar } from "@/components/stats/XPBar";
 import { images } from "@/constants/images";
 import { isPilotLesson } from "@/lib/content";
+import { getSavedFeedItems } from "@/lib/feed";
 import { getContentTotals, getTopicBreakdown, type TopicProgress } from "@/lib/stats";
 import { useProgressStore } from "@/store";
-import { colors, fontFamily, radii, spacing, typeScale } from "@/theme";
+import {
+  fontFamily,
+  radii,
+  spacing,
+  typeScale,
+  useTheme,
+  useThemeMode,
+  useThemedStyles,
+  type ThemeColors,
+} from "@/theme";
 
 // Static totals from the bundled pilot content — same for every user.
 const TOTALS = getContentTotals();
 
 export default function ProgressScreen() {
+  const styles = useThemedStyles(makeStyles);
+  const barStyle = useThemeMode() === "light" ? "dark" : "light";
   const insets = useSafeAreaInsets();
 
   const xp = useProgressStore((s) => s.xp);
   const completedLessons = useProgressStore((s) => s.completedLessons);
   const completedCards = useProgressStore((s) => s.completedCards);
 
+  const savedLessons = useProgressStore((s) => s.savedLessons);
+
   const lessonsDone = useMemo(
     () => completedLessons.filter(isPilotLesson).length,
     [completedLessons]
   );
-  const breakdown = useMemo(() => getTopicBreakdown(completedLessons), [completedLessons]);
+  // A lesson counts as "started" once it's completed or has any read card. The
+  // Progress topic list only shows categories with at least one started lesson.
+  const startedLessonIds = useMemo(() => {
+    const set = new Set(completedLessons);
+    for (const key of completedCards) {
+      const colon = key.lastIndexOf(":");
+      if (colon > 0) set.add(key.slice(0, colon));
+    }
+    return [...set];
+  }, [completedLessons, completedCards]);
+  const breakdown = useMemo(
+    () => getTopicBreakdown(completedLessons, startedLessonIds),
+    [completedLessons, startedLessonIds]
+  );
+  const savedItems = useMemo(() => getSavedFeedItems(savedLessons), [savedLessons]);
+
+  // Status indicator for a saved row (same rule as the feed).
+  const savedStatus = (id: string): LessonStatus =>
+    completedLessons.includes(id)
+      ? "completed"
+      : completedCards.some((k) => k.startsWith(`${id}:`))
+        ? "in-progress"
+        : "not-started";
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBar style={barStyle} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
@@ -85,11 +122,33 @@ export default function ProgressScreen() {
           <StatTile icon="boltAmber" value={xp} label="Total XP" />
         </View>
 
+        {/* Saved (bookmarked) lessons */}
+        {savedItems.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Saved</Text>
+            <View style={styles.topics}>
+              {savedItems.map((item) => (
+                <LessonListItem
+                  key={item.lesson.id}
+                  item={item}
+                  status={savedStatus(item.lesson.id)}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/lesson/[id]",
+                      params: { id: item.lesson.id, card: "0" },
+                    })
+                  }
+                />
+              ))}
+            </View>
+          </>
+        )}
+
         {/* Per-topic completion */}
         <Text style={styles.sectionTitle}>Topics</Text>
         {breakdown.length === 0 ? (
           <Text style={styles.empty}>
-            Finish a lesson to start tracking your topics.
+            Start a lesson to see your topics here.
           </Text>
         ) : (
           <View style={styles.topics}>
@@ -115,9 +174,16 @@ function StatTile({
   total?: number;
   label: string;
 }) {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.tile}>
-      <Image source={images[icon]} style={styles.tileIcon} contentFit="contain" />
+      <Image
+        source={images[icon]}
+        style={styles.tileIcon}
+        contentFit="contain"
+        tintColor={icon === "boltAmber" ? undefined : c.txt}
+      />
       <Text style={styles.tileValue}>
         {value}
         {total !== undefined && <Text style={styles.tileTotal}> / {total}</Text>}
@@ -128,16 +194,15 @@ function StatTile({
 }
 
 /** One topic's completion row: icon tile, title, count, and a progress bar.
- *  Tapping opens the next unfinished lesson in that category (else the first). */
+ *  Tapping opens that category's detail page (its full lesson list + Continue). */
 function TopicRow({ topic }: { topic: TopicProgress }) {
+  const styles = useThemedStyles(makeStyles);
   const fraction = topic.total > 0 ? topic.completed / topic.total : 0;
   return (
     <Pressable
-      onPress={() =>
-        router.push({ pathname: "/lesson/[id]", params: { id: topic.nextLessonId, card: "0" } })
-      }
+      onPress={() => router.push({ pathname: "/category/[slug]", params: { slug: topic.slug } })}
       accessibilityRole="button"
-      accessibilityLabel={`${topic.title}, ${topic.completed} of ${topic.total} done. Continue this category.`}
+      accessibilityLabel={`${topic.title}, ${topic.completed} of ${topic.total} done. Open category.`}
       style={({ pressed }) => [styles.topicRow, pressed && styles.topicRowPressed]}
     >
       <View style={[styles.topicIconTile, { backgroundColor: topic.bg }]}>
@@ -158,8 +223,9 @@ function TopicRow({ topic }: { topic: TopicProgress }) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.ink },
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.ink },
   content: { paddingHorizontal: spacing.screen },
 
   header: {
@@ -169,22 +235,22 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h2.size,
   },
   pills: { flexDirection: "row", alignItems: "center", gap: 8 },
 
   levelCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.hero,
     padding: 18,
     elevation: 2,
   },
   cardLabel: {
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.bodySm.size,
     marginBottom: 14,
@@ -199,39 +265,39 @@ const styles = StyleSheet.create({
   tile: {
     flex: 1,
     alignItems: "center",
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.card,
     paddingVertical: 18,
   },
   tileIcon: { width: 24, height: 24, marginBottom: 8 },
   tileValue: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h3.size,
   },
   tileTotal: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.bodySm.size,
   },
   tileLabel: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.caption.size,
     marginTop: 2,
   },
 
   sectionTitle: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h3.size,
     marginTop: 28,
     marginBottom: 14,
   },
   empty: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.body.size,
   },
@@ -241,9 +307,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.card,
     padding: 14,
   },
@@ -266,13 +332,13 @@ const styles = StyleSheet.create({
   },
   topicTitle: {
     flex: 1,
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.h4.size,
     paddingRight: 12,
   },
   topicCount: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.bodySm.size,
   },

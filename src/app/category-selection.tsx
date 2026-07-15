@@ -28,13 +28,25 @@ import { filterByQuery } from "@/lib/search";
 import { topics } from "@/data";
 import { categories } from "@/data/topics";
 import { usePreferencesStore, useProgressStore } from "@/store";
-import { colors, fontFamily, radii, spacing, typeScale } from "@/theme";
-import type { CategorySlug } from "@/theme";
+import {
+  fontFamily,
+  radii,
+  spacing,
+  typeScale,
+  useTheme,
+  useThemeMode,
+  useThemedStyles,
+  type CategorySlug,
+  type ThemeColors,
+} from "@/theme";
 
 const H_PAD = spacing.screen; // 24dp horizontal screen padding
 const GAP = 12; // grid gap between cards
 
 export default function CategorySelection() {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const barStyle = useThemeMode() === "light" ? "dark" : "light";
   const insets = useSafeAreaInsets();
   // Derive card width from the live window width so the two-column grid stays
   // correct across device rotation (a module-level Dimensions read wouldn't).
@@ -80,15 +92,15 @@ export default function CategorySelection() {
     [searching, query, topicTitlesBySlug]
   );
 
-  // Category sort: alphabetical (A–Z) or by lesson count (biggest first).
-  const [sortMode, setSortMode] = useState<"az" | "lessons">("az");
+  // Category sort: alphabetical (A–Z), by thematic group, or by lesson count.
+  const [sortMode, setSortMode] = useState<"az" | "type" | "lessons">("az");
   const sortedCategories = useMemo(() => {
     const arr = [...visibleCategories];
-    arr.sort((a, b) =>
-      sortMode === "lessons"
-        ? b.lessonCount - a.lessonCount || a.title.localeCompare(b.title)
-        : a.title.localeCompare(b.title)
-    );
+    arr.sort((a, b) => {
+      if (sortMode === "lessons") return b.lessonCount - a.lessonCount || a.title.localeCompare(b.title);
+      if (sortMode === "type") return a.group.localeCompare(b.group) || a.title.localeCompare(b.title);
+      return a.title.localeCompare(b.title);
+    });
     return arr;
   }, [visibleCategories, sortMode]);
 
@@ -111,7 +123,7 @@ export default function CategorySelection() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBar style={barStyle} />
 
       {/* Top nav: centered title with the back button overlaid at the left */}
       <View style={[styles.topNav, { paddingTop: insets.top + 8 }]}>
@@ -123,7 +135,7 @@ export default function CategorySelection() {
           hitSlop={12}
           style={[styles.backBtn, { top: insets.top + 5 }]}
         >
-          <Image source={images.chevronLeft} style={styles.backIcon} contentFit="contain" />
+          <Image source={images.chevronLeft} style={styles.backIcon} contentFit="contain" tintColor={c.txt} />
         </Pressable>
       </View>
 
@@ -150,6 +162,7 @@ export default function CategorySelection() {
           {!searching && (
             <View style={styles.sortChips}>
               <SortChip label="A–Z" active={sortMode === "az"} onPress={() => setSortMode("az")} />
+              <SortChip label="Type" active={sortMode === "type"} onPress={() => setSortMode("type")} />
               <SortChip
                 label="Lessons"
                 active={sortMode === "lessons"}
@@ -191,7 +204,7 @@ export default function CategorySelection() {
             onPress={() => router.push("/explore")}
             style={({ pressed }) => [styles.seeAll, pressed && styles.pressed]}
           >
-            <Image source={images.globeIcon} style={styles.globeIcon} contentFit="contain" />
+            <Image source={images.globeIcon} style={styles.globeIcon} contentFit="contain" tintColor={c.txt} />
             <Text style={styles.seeAllText}>Browse all in Explore</Text>
           </Pressable>
         )}
@@ -200,7 +213,7 @@ export default function CategorySelection() {
       {/* Sticky CTA over a bottom fade of ink */}
       <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
         <LinearGradient
-          colors={["rgba(15,19,32,0)", colors.ink]}
+          colors={["rgba(15,19,32,0)", c.ink]}
           locations={[0, 0.55]}
           style={styles.footerFade}
         />
@@ -235,6 +248,7 @@ function SortChip({
   active: boolean;
   onPress: () => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       onPress={onPress}
@@ -249,8 +263,9 @@ function SortChip({
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.ink },
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.ink },
 
   topNav: {
     paddingHorizontal: H_PAD,
@@ -258,7 +273,7 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: "center",
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: 20,
     lineHeight: 26,
@@ -279,7 +294,7 @@ const styles = StyleSheet.create({
   search: { marginTop: 4 },
 
   sectionLabel: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.caption.size,
     lineHeight: typeScale.caption.lineHeight,
@@ -298,16 +313,16 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
+    borderColor: c.line,
+    backgroundColor: c.surface,
   },
-  sortChipActive: { backgroundColor: colors.amber, borderColor: colors.amber },
+  sortChipActive: { backgroundColor: c.amber, borderColor: c.amber },
   sortChipText: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.caption.size,
   },
-  sortChipTextActive: { color: colors.txtOnAmber },
+  sortChipTextActive: { color: c.txtOnAmber },
 
   grid: {
     flexDirection: "row",
@@ -316,7 +331,7 @@ const styles = StyleSheet.create({
   },
 
   noResults: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.body.size,
     marginTop: 8,
@@ -328,13 +343,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radii.card,
     marginTop: 16,
   },
   globeIcon: { width: 20, height: 20 },
   seeAllText: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.h4.size,
   },

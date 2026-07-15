@@ -1,6 +1,8 @@
 /** JOAT design tokens (TS mirror of global.css). Single import surface. */
-export { colors } from "./colors";
-export type { ColorToken } from "./colors";
+export { colors, darkColors, lightColors } from "./colors";
+export type { ColorToken, ThemeColors } from "./colors";
+
+export { useTheme, useThemeMode, useThemedStyles } from "./useTheme";
 
 // Category accents + slug type are data-driven (`@/data/categories`); re-exported
 // here so the rest of the app keeps importing them from `@/theme`.

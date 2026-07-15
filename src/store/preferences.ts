@@ -19,9 +19,14 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { CategorySlug } from "@/theme";
 
+/** App theme mode (Settings → Appearance). `system` follows the OS setting. */
+export type ThemeMode = "dark" | "light" | "system";
+
 type PreferencesState = {
   /** Categories the user picked, in selection order. */
   selectedTopics: CategorySlug[];
+  /** Chosen theme mode (Settings → Appearance). */
+  themeMode: ThemeMode;
   /** True once the persisted selection has been read back from AsyncStorage. */
   hasHydrated: boolean;
 
@@ -29,6 +34,8 @@ type PreferencesState = {
   setSelectedTopics: (topics: CategorySlug[]) => void;
   /** Add/remove a single category. */
   toggleTopic: (slug: CategorySlug) => void;
+  /** Set the app theme mode. */
+  setThemeMode: (mode: ThemeMode) => void;
   /** Clear the selection (temporary reset button / sign-out). */
   reset: () => void;
 
@@ -40,6 +47,7 @@ export const usePreferencesStore = create<PreferencesState>()(
   persist(
     (set) => ({
       selectedTopics: [],
+      themeMode: "dark",
       hasHydrated: false,
 
       setSelectedTopics: (topics) => set({ selectedTopics: topics }),
@@ -51,6 +59,10 @@ export const usePreferencesStore = create<PreferencesState>()(
             : [...state.selectedTopics, slug],
         })),
 
+      setThemeMode: (mode) => set({ themeMode: mode }),
+
+      // Reset only clears the selection — the theme is a display preference,
+      // not progress, so it survives a topic reset / sign-out.
       reset: () => set({ selectedTopics: [] }),
 
       setHasHydrated: (value) => set({ hasHydrated: value }),
@@ -58,8 +70,11 @@ export const usePreferencesStore = create<PreferencesState>()(
     {
       name: "joat:preferences",
       storage: createJSONStorage(() => AsyncStorage),
-      // Only persist the selection — `hasHydrated` is a runtime-only flag.
-      partialize: (state) => ({ selectedTopics: state.selectedTopics }),
+      // Persist the selection + theme — `hasHydrated` is a runtime-only flag.
+      partialize: (state) => ({
+        selectedTopics: state.selectedTopics,
+        themeMode: state.themeMode,
+      }),
       onRehydrateStorage: () => (state) => {
         // Mark hydration complete even if it failed (state is undefined on
         // error). A failed read just means an empty selection — a valid initial

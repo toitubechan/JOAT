@@ -21,7 +21,16 @@ import { PrimaryButton } from "@/components/PrimaryButton";
 import { images } from "@/constants/images";
 import { usePurchases } from "@/hooks/purchases";
 import { fetchProPriceLabel, PRO_PRICE_LABEL } from "@/lib/purchases";
-import { colors, fontFamily, radii, spacing, typeScale } from "@/theme";
+import {
+  fontFamily,
+  radii,
+  spacing,
+  typeScale,
+  useTheme,
+  useThemeMode,
+  useThemedStyles,
+  type ThemeColors,
+} from "@/theme";
 
 /** The honest Pro benefits — must match what the app actually gates. */
 const BENEFITS = [
@@ -40,6 +49,9 @@ const BENEFITS = [
 ] as const;
 
 export default function PaywallScreen() {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const barStyle = useThemeMode() === "light" ? "dark" : "light";
   const { isPro, pending, buyPro, restore } = usePurchases();
   // Inline, non-blocking notice (fail-open: a failed/cancelled purchase or an
   // empty restore never traps the user — we just tell them and leave them free).
@@ -80,7 +92,7 @@ export default function PaywallScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
-      <StatusBar style="light" />
+      <StatusBar style={barStyle} />
 
       {/* Close (X) — dismiss the modal back to wherever it opened from (or Home
           when the paywall is the entry route). */}
@@ -91,7 +103,7 @@ export default function PaywallScreen() {
         accessibilityLabel="Close"
         style={({ pressed }) => [styles.closeBtn, pressed && styles.pressed]}
       >
-        <Image source={images.closeWhite} style={styles.closeIcon} contentFit="contain" />
+        <Image source={images.closeWhite} style={styles.closeIcon} contentFit="contain" tintColor={c.txt} />
       </Pressable>
 
       <ScrollView
@@ -180,8 +192,9 @@ export default function PaywallScreen() {
 
 const H_PAD = spacing.screen;
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.ink },
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+  screen: { flex: 1, backgroundColor: c.ink },
 
   closeBtn: {
     position: "absolute",
@@ -211,27 +224,27 @@ const styles = StyleSheet.create({
   heroImage: { width: 132, height: 132 },
   proPill: {
     marginTop: 12,
-    backgroundColor: colors.amber,
+    backgroundColor: c.amber,
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 6,
   },
   proPillText: {
-    color: colors.txtOnAmber,
+    color: c.txtOnAmber,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.caption.size,
     letterSpacing: 1.5,
   },
 
   title: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h2.size,
     lineHeight: typeScale.h2.lineHeight,
     textAlign: "center",
   },
   subtitle: {
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodyLg.size,
     lineHeight: 24,
@@ -248,9 +261,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 14,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.card,
     padding: 16,
   },
@@ -258,7 +271,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: colors.teal,
+    backgroundColor: c.teal,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 2,
@@ -266,12 +279,12 @@ const styles = StyleSheet.create({
   checkIcon: { width: 15, height: 15 },
   benefitText: { flex: 1 },
   benefitTitle: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.h4.size,
   },
   benefitBody: {
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
     lineHeight: typeScale.bodySm.lineHeight,
@@ -279,7 +292,7 @@ const styles = StyleSheet.create({
   },
 
   notice: {
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.bodySm.size,
     lineHeight: typeScale.bodySm.lineHeight,
@@ -292,11 +305,11 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
-    backgroundColor: colors.ink,
+    borderTopColor: c.line,
+    backgroundColor: c.ink,
   },
   priceNote: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.caption.size,
     textAlign: "center",
@@ -308,7 +321,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   restoreText: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.body.size,
   },
@@ -317,7 +330,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   skipText: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.bodySm.size,
   },

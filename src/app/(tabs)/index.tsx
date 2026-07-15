@@ -36,7 +36,15 @@ import {
 } from "@/lib/feed";
 import { usePreferencesStore, useProgressStore } from "@/store";
 import { DAILY_GOAL_XP, selectTodayXp } from "@/store/progress";
-import { colors, fontFamily, radii, spacing, typeScale } from "@/theme";
+import {
+  fontFamily,
+  radii,
+  spacing,
+  typeScale,
+  useThemeMode,
+  useThemedStyles,
+  type ThemeColors,
+} from "@/theme";
 
 const WEEKDAYS = [
   "Sunday",
@@ -60,6 +68,8 @@ function useFirstName(): string {
 }
 
 export default function HomeScreen() {
+  const styles = useThemedStyles(makeStyles);
+  const barStyle = useThemeMode() === "light" ? "dark" : "light";
   const insets = useSafeAreaInsets();
   const firstName = useFirstName();
 
@@ -201,7 +211,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBar style={barStyle} />
       <FlatList
         data={feed}
         keyExtractor={(item) => item.lesson.id}
@@ -227,11 +237,13 @@ export default function HomeScreen() {
 }
 
 function Separator() {
+  const styles = useThemedStyles(makeStyles);
   return <View style={styles.separator} />;
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.ink },
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.ink },
   content: { paddingHorizontal: spacing.screen },
 
   headerRow: {
@@ -240,13 +252,13 @@ const styles = StyleSheet.create({
   },
   greetingCol: { flex: 1, paddingRight: 8 },
   greeting: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: 20,
     lineHeight: 26,
   },
   greetingSub: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
     marginTop: 2,
@@ -264,18 +276,18 @@ const styles = StyleSheet.create({
     marginTop: 18,
     padding: 16,
     borderRadius: radii.card,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
   },
   noticePressed: { opacity: 0.85 },
   noticeTitle: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.h4.size,
   },
   noticeText: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
     marginTop: 3,
@@ -289,13 +301,13 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionTitle: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: 22,
     lineHeight: 28,
   },
   viewAll: {
-    color: colors.amber,
+    color: c.amber,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.bodySm.size,
   },
@@ -303,7 +315,7 @@ const styles = StyleSheet.create({
 
   separator: { height: 12 },
   empty: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.body.size,
     textAlign: "center",

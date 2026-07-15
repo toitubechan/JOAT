@@ -51,6 +51,69 @@ const SLUG_OVERRIDE = {
   "Mindfulness & Mental Wellbeing": "mindfulness",
 };
 
+// Categories gated behind a coin unlock (the Shop / prompt 21). Everything is
+// free by default; a category listed here gets a `coinCost` so the unlock
+// economy has real targets. A discounted "random unlock" is offered in the Shop.
+// The two brand-pilot categories (money, mindfulness) stay free on purpose.
+const LOCKED = {
+  "Space Deep Dive": 100,
+  "Filmmaking & Video": 100,
+  "Coding & Programming": 100,
+  "Music & Audio": 100,
+  "Philosophy & Big Ideas": 100,
+  "Future Tech & Innovation": 100,
+};
+
+// Thematic group per category, for the "By type" sort in the picker. Any label
+// not listed falls back to "Other" (surfaced by the verify step so it can be
+// added here).
+const GROUP_OF = {
+  "Money & Finance": "Money & Life",
+  "Business & Entrepreneurship": "Money & Life",
+  "Career & Work": "Money & Life",
+  "Everyday Economics": "Money & Life",
+  "Home & Car": "Money & Life",
+  "Law & Your Rights": "Money & Life",
+  "Marketing & Branding": "Money & Life",
+  "Practical Life Admin": "Money & Life",
+  "Real Estate & Property": "Money & Life",
+  "Technology & Online Safety": "Money & Life",
+  "Animals & Wildlife": "Science & Nature",
+  "Earth Science & Geology": "Science & Nature",
+  "Energy & Power": "Science & Nature",
+  "Everyday Science": "Science & Nature",
+  "Future Tech & Innovation": "Science & Nature",
+  "How Things Work": "Science & Nature",
+  "Human Body Deep Dive": "Science & Nature",
+  "Space Deep Dive": "Science & Nature",
+  "Sustainable Living": "Science & Nature",
+  "Health & Body": "Health & Mind",
+  "Medicine & Public Health": "Health & Mind",
+  "Mindfulness & Mental Wellbeing": "Health & Mind",
+  "Parenting & Child Development": "Health & Mind",
+  "Productivity & Self-Growth": "Health & Mind",
+  "Psychology & Mind": "Health & Mind",
+  "Relationships & Dating": "Health & Mind",
+  "Sports & Fitness": "Health & Mind",
+  "Communication & People Skills": "Health & Mind",
+  "Baking & Desserts": "Skills & Creativity",
+  "Coding & Programming": "Skills & Creativity",
+  "Cooking & Food": "Skills & Creativity",
+  "Creative Writing": "Skills & Creativity",
+  "Design & Visual Creativity": "Skills & Creativity",
+  "Filmmaking & Video": "Skills & Creativity",
+  "Music & Audio": "Skills & Creativity",
+  "World Cuisines": "Skills & Creativity",
+  "Government & Politics": "World & Ideas",
+  "History & the World": "World & Ideas",
+  "Languages & Linguistics": "World & Ideas",
+  "Logic & Critical Thinking": "World & Ideas",
+  "Math Concepts": "World & Ideas",
+  "Numbers & Data Literacy": "World & Ideas",
+  "Philosophy & Big Ideas": "World & Ideas",
+  "World Religions & Belief": "World & Ideas",
+};
+
 const slugify = (s) =>
   s.toLowerCase().replace(/&/g, " ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
@@ -126,14 +189,25 @@ function main() {
     // rather than emitting `icon: "undefined"` (an invalid ImageKey).
     const hero = e.hero || "catMoneyHero";
     if (!e.hero) console.warn(`[build-content] no registered hero for "${label}" — using catMoneyHero`);
-    return { slug, label, hero, tint: color.tint, bg: color.bg, lessonCount: e.count };
+    const group = GROUP_OF[label] || "Other";
+    if (group === "Other") console.warn(`[build-content] no GROUP_OF mapping for "${label}" — using "Other"`);
+    return {
+      slug,
+      label,
+      hero,
+      group,
+      tint: color.tint,
+      bg: color.bg,
+      lessonCount: e.count,
+      coinCost: LOCKED[label],
+    };
   });
 
   const body = cats
-    .map(
-      (c) =>
-        `  { slug: "${c.slug}", title: ${JSON.stringify(c.label)}, icon: "${c.hero}", tint: "${c.tint}", bg: "${c.bg}", lessonCount: ${c.lessonCount} },`
-    )
+    .map((c) => {
+      const lock = c.coinCost != null ? `, coinCost: ${c.coinCost}` : "";
+      return `  { slug: "${c.slug}", title: ${JSON.stringify(c.label)}, icon: "${c.hero}", group: ${JSON.stringify(c.group)}, tint: "${c.tint}", bg: "${c.bg}", lessonCount: ${c.lessonCount}${lock} },`;
+    })
     .join("\n");
 
   fs.writeFileSync(
@@ -144,7 +218,7 @@ function main() {
       ` * (rendered as the category/row visual); colors come from a fixed palette.\n` +
       ` * Single source of truth for category slugs, titles, colors and visuals.\n */\n` +
       `import type { ImageKey } from "@/constants/images";\n\n` +
-      `export type Category = {\n  slug: string;\n  /** Frontmatter category label, e.g. "Money & Finance". */\n  title: string;\n  /** Category hero illustration, reused as the small tile/row visual. */\n  icon: ImageKey;\n  tint: string;\n  bg: string;\n  lessonCount: number;\n  /** Coin price to unlock; omitted = free. */\n  coinCost?: number;\n};\n\n` +
+      `export type Category = {\n  slug: string;\n  /** Frontmatter category label, e.g. "Money & Finance". */\n  title: string;\n  /** Category hero illustration, reused as the small tile/row visual. */\n  icon: ImageKey;\n  /** Thematic group for the "By type" sort, e.g. "Science & Nature". */\n  group: string;\n  tint: string;\n  bg: string;\n  lessonCount: number;\n  /** Coin price to unlock; omitted = free. */\n  coinCost?: number;\n};\n\n` +
       `export const CATEGORIES: Category[] = [\n${body}\n];\n\n` +
       `/** Data-driven category slug (all slugs are derived from the content). */\nexport type CategorySlug = string;\n\n` +
       `/** Per-slug accent colors — drop-in for the old hand-written \`categoryColors\`. */\nexport const categoryColors: Record<string, { tint: string; bg: string }> =\n  Object.fromEntries(CATEGORIES.map((c) => [c.slug, { tint: c.tint, bg: c.bg }]));\n\n` +

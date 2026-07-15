@@ -204,6 +204,21 @@ export function getRecentLessons(limit = 8): FeedItem[] {
   return allPilotFeedItems().reverse().slice(0, limit);
 }
 
+/**
+ * The user's saved (bookmarked) lessons as feed items, in save order (newest
+ * first, matching the store). Skips ids that no longer resolve to a lesson.
+ */
+export function getSavedFeedItems(savedIds: string[]): FeedItem[] {
+  const items: FeedItem[] = [];
+  for (const id of savedIds) {
+    const lesson = getLessonById(id);
+    if (!lesson) continue;
+    const slug = slugForLabel(lesson.category);
+    if (slug) items.push(toFeedItem(lesson, slug));
+  }
+  return items;
+}
+
 /** One Explore "browse by category" group: catalog meta + that category's lessons. */
 export type ExploreCategory = {
   slug: CategorySlug;

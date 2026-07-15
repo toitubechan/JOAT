@@ -20,7 +20,15 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { QuizOption, type QuizOptionState } from "@/components/lesson/QuizOption";
 import { trackQuizAnswered } from "@/lib/analytics";
 import { useProgressStore } from "@/store";
-import { colors, fontFamily, radii, spacing, typeScale } from "@/theme";
+import {
+  fontFamily,
+  radii,
+  spacing,
+  typeScale,
+  useTheme,
+  useThemedStyles,
+  type ThemeColors,
+} from "@/theme";
 import type { Lesson } from "@/types/content";
 
 /** Reward for a first-time correct answer (matches the design's reward chips). */
@@ -43,6 +51,8 @@ export function QuizRound({
   onClose,
   onComplete,
 }: QuizRoundProps) {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const questions = lesson.quiz.questions;
   const answerQuiz = useProgressStore((s) => s.answerQuiz);
@@ -127,7 +137,7 @@ export function QuizRound({
           accessibilityLabel="Close lesson"
           style={({ pressed }) => pressed && styles.pressed}
         >
-          <Image source={images.closeWhite} style={styles.close} contentFit="contain" />
+          <Image source={images.closeWhite} style={styles.close} contentFit="contain" tintColor={c.txt} />
         </Pressable>
 
         <View style={styles.headerCenter}>
@@ -214,8 +224,9 @@ export function QuizRound({
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.ink },
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.ink },
 
   header: {
     flexDirection: "row",
@@ -226,13 +237,13 @@ const styles = StyleSheet.create({
   close: { width: 22, height: 22 },
   headerCenter: { flex: 1, alignItems: "center" },
   headerTitle: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h4.size,
     lineHeight: 22,
   },
   headerSubtitle: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
   },
@@ -240,7 +251,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
@@ -256,7 +267,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   progressText: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.bodySm.size,
   },
@@ -269,13 +280,13 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   kicker: {
-    color: colors.teal,
+    color: c.teal,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.caption.size,
     letterSpacing: 1.2,
   },
   prompt: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: typeScale.h1.family,
     fontSize: 28,
     lineHeight: 34,
@@ -290,22 +301,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   explainCorrect: {
-    backgroundColor: colors.successBg,
-    borderColor: colors.successBorder,
+    backgroundColor: c.successBg,
+    borderColor: c.successBorder,
   },
   explainWrong: {
-    backgroundColor: colors.dangerBg,
-    borderColor: colors.dangerBorder,
+    backgroundColor: c.dangerBg,
+    borderColor: c.dangerBorder,
   },
   explainTitle: {
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h4.size,
     marginBottom: 6,
   },
-  explainTitleCorrect: { color: colors.success },
-  explainTitleWrong: { color: colors.danger },
+  explainTitleCorrect: { color: c.success },
+  explainTitleWrong: { color: c.danger },
   explainText: {
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.body.size,
     lineHeight: typeScale.body.lineHeight,
@@ -334,7 +345,7 @@ const styles = StyleSheet.create({
   },
   rewardIcon: { width: 16, height: 16 },
   rewardText: {
-    color: colors.amber,
+    color: c.amber,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.body.size,
   },
@@ -342,18 +353,18 @@ const styles = StyleSheet.create({
   cta: {
     height: spacing.btnH,
     borderRadius: radii.card,
-    backgroundColor: colors.amber,
+    backgroundColor: c.amber,
     alignItems: "center",
     justifyContent: "center",
   },
   ctaDisabled: { opacity: 0.4 },
   ctaText: {
-    color: colors.txtOnAmber,
+    color: c.txtOnAmber,
     fontFamily: fontFamily.bold,
     fontSize: 17,
   },
   ctaChevron: {
-    color: colors.txtOnAmber,
+    color: c.txtOnAmber,
     fontFamily: fontFamily.bold,
     fontSize: 19,
   },

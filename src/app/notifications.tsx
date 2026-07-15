@@ -18,7 +18,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { images } from "@/constants/images";
 import { announcements, type Announcement } from "@/data/announcements";
-import { colors, fontFamily, radii, spacing, typeScale } from "@/theme";
+import {
+  fontFamily,
+  radii,
+  spacing,
+  typeScale,
+  useTheme,
+  useThemeMode,
+  useThemedStyles,
+  type ThemeColors,
+} from "@/theme";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -46,9 +55,12 @@ function postedLabel(iso: string): string {
 }
 
 export default function NotificationsScreen() {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const barStyle = useThemeMode() === "light" ? "dark" : "light";
   return (
     <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
-      <StatusBar style="light" />
+      <StatusBar style={barStyle} />
 
       {/* Header: title with the close (X) overlaid at the right (mirrors paywall). */}
       <View style={styles.header}>
@@ -60,7 +72,7 @@ export default function NotificationsScreen() {
           accessibilityLabel="Close notifications"
           style={({ pressed }) => [styles.closeBtn, pressed && styles.pressed]}
         >
-          <Image source={images.closeWhite} style={styles.closeIcon} contentFit="contain" />
+          <Image source={images.closeWhite} style={styles.closeIcon} contentFit="contain" tintColor={c.txt} />
         </Pressable>
       </View>
 
@@ -81,6 +93,7 @@ export default function NotificationsScreen() {
 
 /** One announcement: colored icon tile + title, body and a posted-at label. */
 function NotificationRow({ item }: { item: Announcement }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.row}>
       <View style={[styles.tile, { backgroundColor: item.accent }]}>
@@ -100,13 +113,15 @@ function NotificationRow({ item }: { item: Announcement }) {
 }
 
 function Separator() {
+  const styles = useThemedStyles(makeStyles);
   return <View style={styles.separator} />;
 }
 
 const H_PAD = spacing.screen;
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.ink },
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+  screen: { flex: 1, backgroundColor: c.ink },
 
   header: {
     paddingHorizontal: H_PAD,
@@ -115,7 +130,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h2.size,
     lineHeight: typeScale.h2.lineHeight,
@@ -141,9 +156,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 14,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.card,
     padding: 16,
   },
@@ -163,17 +178,17 @@ const styles = StyleSheet.create({
   },
   rowTitle: {
     flex: 1,
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.h4.size,
   },
   rowDate: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.caption.size,
   },
   rowBody: {
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
     lineHeight: typeScale.bodySm.lineHeight,
@@ -182,7 +197,7 @@ const styles = StyleSheet.create({
 
   separator: { height: 12 },
   empty: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.body.size,
     textAlign: "center",

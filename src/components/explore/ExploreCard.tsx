@@ -13,7 +13,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { FeedImage } from "@/components/FeedImage";
 import type { FeedItem } from "@/lib/feed";
-import { colors, fontFamily, radii, typeScale } from "@/theme";
+import { fontFamily, radii, typeScale, useThemedStyles, type ThemeColors } from "@/theme";
 
 /** Fixed card width for the horizontal rows. */
 export const EXPLORE_CARD_WIDTH = 180;
@@ -24,6 +24,7 @@ type ExploreCardProps = {
 };
 
 function ExploreCardBase({ item, onPress }: ExploreCardProps) {
+  const styles = useThemedStyles(makeStyles);
   const { lesson, categoryLabel, tint, bg, xp } = item;
   // First card visual if the lesson has one; FeedImage falls back otherwise.
   const imageKey = lesson.cards.find((card) => card.image != null)?.image;
@@ -64,12 +65,13 @@ function ExploreCardBase({ item, onPress }: ExploreCardProps) {
 
 export const ExploreCard = memo(ExploreCardBase);
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   card: {
     width: EXPLORE_CARD_WIDTH,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.card,
     overflow: "hidden",
     elevation: 2,
@@ -78,7 +80,7 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 104,
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: c.surfaceRaised,
   },
   body: { padding: 12 },
   chip: {
@@ -92,14 +94,14 @@ const styles = StyleSheet.create({
     fontSize: typeScale.caption.size,
   },
   title: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.h4.size,
     lineHeight: 21,
     marginTop: 8,
   },
   meta: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
     marginTop: 4,

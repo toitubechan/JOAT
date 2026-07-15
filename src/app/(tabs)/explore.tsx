@@ -38,7 +38,17 @@ import {
 } from "@/lib/feed";
 import { filterByQuery } from "@/lib/search";
 import { useProgressStore } from "@/store";
-import { colors, fontFamily, radii, spacing, typeScale, type CategorySlug } from "@/theme";
+import {
+  fontFamily,
+  radii,
+  spacing,
+  typeScale,
+  useTheme,
+  useThemeMode,
+  useThemedStyles,
+  type CategorySlug,
+  type ThemeColors,
+} from "@/theme";
 
 /** An Explore list row is either a search result (a lesson) or a category group. */
 type ExploreRow = FeedItem | ExploreCategory;
@@ -48,6 +58,8 @@ function isCategory(row: ExploreRow): row is ExploreCategory {
 }
 
 export default function ExploreScreen() {
+  const styles = useThemedStyles(makeStyles);
+  const barStyle = useThemeMode() === "light" ? "dark" : "light";
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
 
@@ -56,19 +68,6 @@ export default function ExploreScreen() {
   const recent = useMemo(() => getRecentLessons(), []);
   const sections = useMemo(() => getExploreCategories(), []);
   const allLessons = useMemo(() => getExploreLessons(), []);
-
-  // "Browse by category" is an accordion: categories start collapsed (just their
-  // header) so the list stays short as content grows; tapping a header expands it
-  // to reveal that category's lessons. `expandedSlugs` holds the open ones.
-  const [expandedSlugs, setExpandedSlugs] = useState<Set<CategorySlug>>(() => new Set());
-  const toggleCategory = useCallback((slug: CategorySlug) => {
-    setExpandedSlugs((prev) => {
-      const next = new Set(prev);
-      if (next.has(slug)) next.delete(slug);
-      else next.add(slug);
-      return next;
-    });
-  }, []);
 
   // A separate, lightweight filter for the browse list — narrows which category
   // blocks show (by category name, plus the topics inside them). Independent of
@@ -125,6 +124,10 @@ export default function ExploreScreen() {
     router.push({ pathname: "/lesson/[id]", params: { id: lessonId, card: "0" } });
   }, []);
 
+  const openCategory = useCallback((slug: CategorySlug) => {
+    router.push({ pathname: "/category/[slug]", params: { slug } });
+  }, []);
+
   const trimmed = query.trim();
   const searching = trimmed.length > 0;
 
@@ -151,12 +154,7 @@ export default function ExploreScreen() {
           <CategoryBlock
             section={item}
             locked={lockedSlugs.has(item.slug)}
-            // While filtering the browse list, open the matches so the hit is
-            // visible without an extra tap; otherwise honor the user's toggles.
-            expanded={categorySearching || expandedSlugs.has(item.slug)}
-            onToggle={() => toggleCategory(item.slug)}
-            statusFor={statusFor}
-            onOpen={openLesson}
+            onOpen={openCategory}
             onRequestUnlock={setUnlockSlug}
           />
         );
@@ -171,7 +169,7 @@ export default function ExploreScreen() {
         />
       );
     },
-    [lockedSlugs, statusFor, openLesson, categorySearching, expandedSlugs, toggleCategory]
+    [lockedSlugs, statusFor, openLesson, openCategory]
   );
 
   const header = (
@@ -212,7 +210,7 @@ export default function ExploreScreen() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBar style={barStyle} />
       <FlatList
         data={data}
         keyExtractor={(item) => (isCategory(item) ? `cat-${item.slug}` : item.lesson.id)}
@@ -261,6 +259,7 @@ function HorizontalRow({
   items: FeedItem[];
   onOpen: (lessonId: string) => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
   if (items.length === 0) return null;
   return (
     <View style={styles.row}>
@@ -282,111 +281,91 @@ function HorizontalRow({
 }
 
 /**
- * One "browse by category" group: a tappable header (icon, count, lock badge,
- * expand chevron) that toggles its list of lessons open/closed. Collapsed by
- * default so the browse list stays short.
+ * One "browse by category" row: a tappable header (icon, title, lesson count,
+ * lock badge) that opens the category's detail page (`/category/[slug]`), where
+ * its full lesson list lives. Keeps the browse list a short, scannable directory
+ * no matter how much content a category holds.
  */
 function CategoryBlock({
   section,
   locked,
-  expanded,
-  onToggle,
-  statusFor,
   onOpen,
   onRequestUnlock,
 }: {
   section: ExploreCategory;
   /** Coin-locked and not yet unlocked (computed by the screen from the store). */
   locked: boolean;
-  /** Whether this category's lessons are currently shown. */
-  expanded: boolean;
-  onToggle: () => void;
-  statusFor: (lessonId: string) => LessonStatus;
-  onOpen: (lessonId: string) => void;
+  onOpen: (slug: CategorySlug) => void;
   onRequestUnlock: (slug: CategorySlug) => void;
 }) {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
-    <View style={styles.section}>
-      <Pressable
-        onPress={onToggle}
-        accessibilityRole="button"
-        accessibilityState={{ expanded }}
-        accessibilityLabel={`${section.title}, ${section.items.length} lessons, ${
-          expanded ? "expanded" : "collapsed"
-        }`}
-        style={({ pressed }) => [styles.sectionHead, pressed && styles.sectionHeadPressed]}
-      >
-        <View style={[styles.sectionTile, { backgroundColor: section.bg }]}>
-          <Image source={images[section.icon]} style={styles.sectionIcon} contentFit="contain" />
-        </View>
-        <View style={styles.sectionMeta}>
-          <Text style={styles.sectionTitle} numberOfLines={1}>
-            {section.title}
-          </Text>
-          <Text style={styles.sectionCount}>
-            {section.items.length} {section.items.length === 1 ? "lesson" : "lessons"}
-          </Text>
-        </View>
-        {locked && section.coinCost != null && (
-          <Pressable
-            onPress={() => onRequestUnlock(section.slug)}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={`Unlock ${section.title} for ${section.coinCost} coins`}
-            style={({ pressed }) => [styles.coinBadge, pressed && styles.coinBadgePressed]}
-          >
-            <Image source={images.coinIcon} style={styles.coinIcon} contentFit="contain" />
-            <Text style={styles.coinText}>{section.coinCost}</Text>
-          </Pressable>
-        )}
-        {/* Up-chevron asset rotated to point down when collapsed. */}
-        <Image
-          source={images.chevronUp}
-          style={[styles.chevron, !expanded && styles.chevronCollapsed]}
-          contentFit="contain"
-        />
-      </Pressable>
-
-      {expanded && (
-        <View style={styles.sectionRows}>
-          {section.items.map((item) => (
-            <LessonListItem
-              key={item.lesson.id}
-              item={item}
-              status={statusFor(item.lesson.id)}
-              // A locked category's lessons open the unlock sheet, not the reader.
-              onPress={() =>
-                locked ? onRequestUnlock(section.slug) : onOpen(item.lesson.id)
-              }
-            />
-          ))}
-        </View>
+    <Pressable
+      onPress={() => onOpen(section.slug)}
+      accessibilityRole="button"
+      accessibilityLabel={`${section.title}, ${section.items.length} lessons`}
+      style={({ pressed }) => [styles.sectionHead, pressed && styles.sectionHeadPressed]}
+    >
+      <View style={[styles.sectionTile, { backgroundColor: section.bg }]}>
+        <Image source={images[section.icon]} style={styles.sectionIcon} contentFit="contain" />
+      </View>
+      <View style={styles.sectionMeta}>
+        <Text style={styles.sectionTitle} numberOfLines={1}>
+          {section.title}
+        </Text>
+        <Text style={styles.sectionCount}>
+          {section.items.length} {section.items.length === 1 ? "lesson" : "lessons"}
+        </Text>
+      </View>
+      {locked && section.coinCost != null && (
+        <Pressable
+          onPress={() => onRequestUnlock(section.slug)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={`Unlock ${section.title} for ${section.coinCost} coins`}
+          style={({ pressed }) => [styles.coinBadge, pressed && styles.coinBadgePressed]}
+        >
+          <Image source={images.coinIcon} style={styles.coinIcon} contentFit="contain" />
+          <Text style={styles.coinText}>{section.coinCost}</Text>
+        </Pressable>
       )}
-    </View>
+      {/* Left-chevron asset rotated to point right — opens the category page. */}
+      <Image
+        source={images.chevronLeft}
+        style={styles.sectionChevron}
+        contentFit="contain"
+        tintColor={c.txtMuted}
+      />
+    </Pressable>
   );
 }
 
 function ResultSeparator() {
+  const styles = useThemedStyles(makeStyles);
   return <View style={styles.resultSeparator} />;
 }
 function SectionSeparator() {
+  const styles = useThemedStyles(makeStyles);
   return <View style={styles.sectionSeparator} />;
 }
 function HSeparator() {
+  const styles = useThemedStyles(makeStyles);
   return <View style={styles.hSeparator} />;
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.ink },
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.ink },
   content: { paddingHorizontal: spacing.screen },
 
   title: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h2.size,
   },
   subtitle: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
     marginTop: 2,
@@ -394,7 +373,7 @@ const styles = StyleSheet.create({
   search: { marginTop: 16 },
 
   resultsCount: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.bodySm.size,
     marginTop: 16,
@@ -404,7 +383,7 @@ const styles = StyleSheet.create({
   // Horizontal rows bleed past the screen padding, so the cards reach the edge.
   row: { marginTop: 24 },
   rowTitle: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: 20,
     lineHeight: 26,
@@ -415,7 +394,7 @@ const styles = StyleSheet.create({
   hSeparator: { width: 12 },
 
   browseTitle: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: 20,
     lineHeight: 26,
@@ -424,15 +403,19 @@ const styles = StyleSheet.create({
   },
   categorySearch: { marginBottom: 4 },
 
-  section: { marginTop: 18 },
   sectionHead: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    paddingVertical: 10,
   },
   sectionHeadPressed: { opacity: 0.7 },
-  chevron: { width: 16, height: 16 },
-  chevronCollapsed: { transform: [{ rotate: "180deg" }] },
+  sectionChevron: {
+    width: 16,
+    height: 16,
+    transform: [{ rotate: "180deg" }],
+    opacity: 0.4,
+  },
   sectionTile: {
     width: spacing.iconTile,
     height: spacing.iconTile,
@@ -443,12 +426,12 @@ const styles = StyleSheet.create({
   sectionIcon: { width: 22, height: 22 },
   sectionMeta: { flex: 1 },
   sectionTitle: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.h4.size,
   },
   sectionCount: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
     marginTop: 1,
@@ -457,7 +440,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: colors.line,
+    backgroundColor: c.line,
     borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -465,17 +448,15 @@ const styles = StyleSheet.create({
   coinBadgePressed: { opacity: 0.7 },
   coinIcon: { width: 14, height: 14 },
   coinText: {
-    color: colors.coin,
+    color: c.coin,
     fontFamily: fontFamily.semibold,
     fontSize: 12,
   },
-  sectionRows: { gap: 12, marginTop: 12 },
-
   resultSeparator: { height: 12 },
   sectionSeparator: { height: 8 },
 
   empty: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.body.size,
     textAlign: "center",

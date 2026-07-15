@@ -1,13 +1,16 @@
 /**
- * JOAT color tokens (raw hex).
+ * JOAT color tokens (raw hex) — now theme-aware.
  *
- * Mirrors the `--color-*` tokens in `src/global.css`. In JSX, prefer NativeWind
- * classes (`bg-surface`, `text-txt-secondary`, ...). Import these raw values only
- * where className can't reach — the StyleSheet/inline contexts called out in
- * AGENTS.md "Style Exception Rules" (Android `elevation`, SafeAreaView, Animated
- * values, runtime-computed styles).
+ * Two palettes with identical keys: `darkColors` (the original brand look) and
+ * `lightColors`. Components should read the active set via `useTheme()`
+ * (theme/useTheme.ts) and build their styles with `makeStyles(c)`; the exported
+ * `colors` alias stays = dark for back-compat and non-component (data) files.
+ *
+ * Accents (amber, teal, coin, streak, semantic base colors) are shared across
+ * both themes for brand consistency; only the neutrals and the *Bg/*Border/*Text
+ * variants flip.
  */
-export const colors = {
+export const darkColors = {
   // Primary
   amber: "#FFB020",
   amberDeep: "#F59300",
@@ -45,8 +48,49 @@ export const colors = {
   info: "#4D8BFF",
 } as const;
 
-export type ColorToken = keyof typeof colors;
+/** Any theme's color set — same keys as `darkColors`, values are plain strings. */
+export type ThemeColors = Record<keyof typeof darkColors, string>;
 
-// Category accent colors + the `CategorySlug` type are now data-driven (one per
-// distinct lesson category); they live in `@/data/categories` and are re-exported
-// from `@/theme` (see theme/index.ts) so existing imports keep working.
+/** Light palette. Same keys; neutrals + tinted-bg variants flipped for a light UI. */
+export const lightColors: ThemeColors = {
+  // Primary (shared brand accents)
+  amber: "#FFB020",
+  amberDeep: "#F59300",
+  amberPressed: "#E08400",
+  teal: "#0F9E92",
+  tealBg: "#E1F5F1",
+  tealBorder: "#B5E4DC",
+  tealText: "#0C6C61",
+  ink: "#F4F5F9", // app background (light)
+
+  // Light surfaces
+  surface: "#FFFFFF",
+  surfaceRaised: "#EEF0F5",
+  line: "#E3E6ED",
+  tabbar: "#FFFFFF",
+
+  // Text on light
+  txt: "#141824",
+  txtSecondary: "#4B5266",
+  txtMuted: "#79808F",
+  txtOnAmber: "#131726",
+
+  // Semantic
+  success: "#16A34A",
+  successBg: "#E7F6EC",
+  successBorder: "#BFE6CB",
+  successText: "#15803D",
+  danger: "#DC2626",
+  dangerBg: "#FCEBEB",
+  dangerBorder: "#F5C9C9",
+  streak: "#EF6C00",
+  coin: "#B7791F",
+  coinBg: "#FBF1D5",
+  coinBorder: "#EBD8A2",
+  info: "#2563EB",
+};
+
+/** Back-compat default (dark). Prefer `useTheme()` in components. */
+export const colors = darkColors;
+
+export type ColorToken = keyof typeof darkColors;

@@ -22,8 +22,6 @@ export type TopicProgress = {
   bg: string;
   completed: number;
   total: number;
-  /** Lesson to open when the row is tapped: first unfinished, else the first. */
-  nextLessonId: string;
 };
 
 /** Total pilot lessons and cards available (static — computed from content). */
@@ -37,11 +35,18 @@ export function getContentTotals(): { lessons: number; cards: number } {
 
 /**
  * Group the pilot lessons by top-level category and count how many the user has
- * completed in each. Ordered most-complete first so the screen leads with the
- * user's strongest topics.
+ * completed in each. Only categories the user has actually **started** are
+ * returned — a category shows once it has ≥1 lesson completed or in progress
+ * (`startedLessonIds`), so untouched categories stay off the Progress screen.
+ * Ordered most-complete first so the screen leads with the user's strongest
+ * topics.
  */
-export function getTopicBreakdown(completedLessonIds: string[]): TopicProgress[] {
+export function getTopicBreakdown(
+  completedLessonIds: string[],
+  startedLessonIds: string[]
+): TopicProgress[] {
   const done = new Set(completedLessonIds);
+  const started = new Set(startedLessonIds);
 
   // category title -> its lessons
   const byCategory = new Map<string, { slug: CategorySlug; lessons: Lesson[] }>();
@@ -55,13 +60,9 @@ export function getTopicBreakdown(completedLessonIds: string[]): TopicProgress[]
 
   const rows: TopicProgress[] = [];
   for (const [title, { slug, lessons }] of byCategory) {
+    // Skip categories the user hasn't opened yet (nothing started or completed).
+    if (!lessons.some((l) => started.has(l.id))) continue;
     const completed = lessons.filter((l) => done.has(l.id)).length;
-    // Ordered by topic then position so "next" is the first unfinished lesson
-    // (or the first lesson when the whole category is already done).
-    const ordered = [...lessons].sort(
-      (a, b) => a.topic.localeCompare(b.topic) || a.order - b.order
-    );
-    const next = ordered.find((l) => !done.has(l.id)) ?? ordered[0];
     const catalog = categories.find((c) => c.slug === slug);
     const color = categoryColors[slug];
     rows.push({
@@ -72,7 +73,6 @@ export function getTopicBreakdown(completedLessonIds: string[]): TopicProgress[]
       bg: color.bg,
       completed,
       total: lessons.length,
-      nextLessonId: next.id,
     });
   }
 

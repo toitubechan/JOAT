@@ -1,5 +1,58 @@
 # App notes — decisions to revisit
 
+## Google Play Console setup — 2026-07-15
+
+Follow-up completed later on 2026-07-15:
+
+- Finalized and published `docs/privacy-policy.md` and
+  `docs/account-deletion.md` to `toitubechan/JOAT` on GitHub (commit
+  `9c93e3e`). Both public URLs returned HTTP 200.
+- Added the public privacy-policy URL to Google Play Console.
+- Set the Play category to **Education**.
+- Set and saved the base app price as **Free**, matching the ads + optional Pro
+  purchase model. This becomes irreversible after the app is published.
+- The GitHub policy uses `toitubechan` / `toitubechan@gmail.com`, taken from the
+  repository's configured author identity.
+
+Playwright resumed the signed-in Play Console app **JOAT: Jack of All Trades**
+(`com.jackofalltrades.app`). The dashboard advanced from **1/13** to at least
+**4/13** completed setup tasks after saving these accurate declarations:
+
+- Ads: **Yes, the app contains ads**.
+- Government apps: **No**.
+- Financial features: **The app does not provide financial features**. Its
+  personal-finance lessons are educational content, not banking, lending,
+  trading, insurance, payments, or financial-advice functionality.
+
+The declarations are saved in Play Console's Publishing overview but were not
+sent for review or published.
+
+Owner input still required before the remaining setup can be completed safely:
+
+- Finalize and publicly host `docs/privacy-policy.md`; it still contains
+  placeholders for effective date, developer/company name, contact email,
+  children's age threshold, and analytics opt-out wording. Provide its public
+  HTTPS URL.
+- Create/provide a dedicated Clerk reviewer test account (email and password)
+  for Play Console's **App access** section.
+- Confirm the public developer contact email (and optional website/phone) for
+  the store listing.
+- Confirm the intended minimum audience age. The current policy draft says the
+  app is general-audience and not directed to children, but its age threshold is
+  still unresolved.
+- Review the Health declaration carefully: the app contains medicine,
+  nutrition, and exercise educational content, so this must not be answered as
+  “no health content” without checking Google's current categories.
+- Complete Content rating and Data safety using the final build and the
+  cheat-sheet in `docs/privacy-policy.md`.
+- Supply/approve the Play listing copy, feature graphic, phone screenshots, and
+  app category (Education is the likely category).
+- Confirm setting the base app to **Free**. Google warns that an app offered for
+  free cannot later be changed to paid; Joat's planned model is free with ads
+  and a Pro in-app purchase.
+- After setup, create the closed-test release and enroll at least 12 testers for
+  at least 14 days before production access can be requested.
+
 A running list of open judgment calls across the app — choices I made with a
 sensible default that you might want to change later. Each item says **what it
 is**, **where**, the **current choice**, the **alternative**, and **how to
@@ -1050,6 +1103,185 @@ lessons without images**; tsc + lint + 28 tests green.
   than ever (still deferred per the asset-ingest notes).
 - ⚠️ `scripts/build-content.js` reads an **absolute Primer path** on your machine;
   it's a local authoring tool, not part of the app build.
+
+---
+
+## UI polish pass — sorter, subheaders, profile, category detail
+
+A batch of review-driven polish (all verified: tsc 0, lint 0, 28/28 tests).
+
+- **Category "by type" sorter** — the picker (`app/category-selection.tsx`) gained a
+  third sort chip (A–Z · Type · Lessons). "Type" clusters by a new thematic
+  `group` field (5 groups) now emitted per category by
+  `scripts/build-content.js` (`GROUP_OF` map) into `src/data/categories.ts`. If
+  you add a new category label to the Primer vault, add it to `GROUP_OF` too or
+  the build warns and files it under "Other".
+- **Topic subheadings** now live on the **category detail page** (see below), not
+  inline in Explore.
+- **Profile** (`app/(tabs)/profile.tsx`) — added a Settings block with only
+  *functional* rows (Notifications, Restore purchase when not Pro) + an app
+  version footer. No dead controls.
+- **Per-lesson `icon` field** — left in place (kept as reserved plumbing for a
+  future per-lesson-glyph feature; see the earlier note at ~line 1040). Not
+  removed.
+
+### New: Category detail screen (`app/category/[slug].tsx`)
+
+A dedicated page per category: hero (illustration, title, completion progress), a
+Start/Continue/Review CTA that jumps to the next unfinished lesson, then the full
+lesson list grouped under topic subheadings (only when a topic has several
+lessons). Coin-locked categories show an Unlock CTA + the spend sheet; every row
+opens the unlock sheet instead of the reader until unlocked.
+
+Behavioral changes to know when you eyeball it:
+- **Explore** "Browse by category" is no longer an accordion — each category is a
+  **row that navigates** to its detail page (its lessons moved there). The
+  category search + lock badge still work; the coin badge is still a quick-unlock.
+- **Progress** topic rows now open the **category detail page** (not straight into
+  a lesson). The old `nextLessonId` on `TopicProgress` (`lib/stats.ts`) was
+  removed since the detail page computes its own "continue" target. If you prefer
+  Progress rows to deep-link into the next lesson again, revert `TopicRow` in
+  `app/(tabs)/progress.tsx` and restore `nextLessonId`.
+- Route types: `.expo/types/router.d.ts` regenerates the `/category/[slug]` entry
+  on `expo start` (gitignored, self-healing — nothing to commit).
+
+---
+
+## Settings tab + coin Shop + Profile/Settings mockups (08/09)
+
+Restructured the account/economy surfaces and rebuilt **Profile** + **Settings**
+to match the provided mockups `prompt_material/08-settings-screen.png` and
+`09-profile-shop-screen.png` (verified: tsc 0, lint 0, 28/28 tests). Several glyph
+icons were authored to fill gaps: `star-amber`, `crown-amber`, `palette-white`,
+`restore-white`, `target-white`, `book-white`, `logout-white`, `shield-snow` (in
+`assets/images/icons`, registered in `constants/images.ts`).
+
+**New Settings tab** (`app/(tabs)/settings.tsx`, 5th bottom tab). Holds what used
+to be scattered on Profile: account (email + sign out), Joat Pro status/upgrade +
+restore, Notifications, "Change categories", the Theme picker, and the dev reset.
+- Tab icon is the **wrench** glyph (`wrench-dark.svg` / `wrench-mut.svg`, made by
+  recoloring `wrench-c.svg`). It's on-brand for "Jack of all trades" but if you'd
+  rather have a gear, drop `gear-dark.svg`/`gear-mut.svg` in `assets/images/icons`,
+  register them in `constants/images.ts`, and point `TAB_META.settings` at them.
+
+**Profile tab is now the wallet + Shop** (`app/(tabs)/profile.tsx`): coin balance
+(+ streak / freeze counts) and the Shop:
+- **Streak freeze — 50 coins** (`buyStreakFreeze`) — see the mechanic below.
+  Profile shows the owned count.
+- **Random lesson — 80 coins** — spends coins on a random *unfinished* lesson,
+  unlocking its category if it's coin-locked, then opens it (the "surprise").
+- **Unlock Joat Pro** — big amber card → paywall, plus a "Manage subscription" link.
+- Shop actions show a brief inline "flash" confirmation (no toast lib).
+- NOTE: the earlier **"Watch an ad → coins" tile was removed** to match mockup 09
+  (the rewarded-ad flow still exists for lesson-complete). Easy to re-add.
+
+The Profile identity header uses `mascotWelcome`; the stats card shows Coins / XP /
+Day-streak + Level progress (level via `levelInfo(xp)`).
+
+**Theme mode (Settings → Appearance).** A Dark / Light / System segmented control
+(matches mockup 08). The choice persists in the preferences store (`themeMode`,
+default `dark`). ⚠️ Only **Dark** is actually applied today — Light/System store
+the preference but the app still renders dark (a real light theme = re-theming
+every screen, the big task flagged earlier). The earlier accent-color picker
+(`useAccent`, `accents` palette) was **removed** in favor of this.
+
+Settings rows that are still stubs (Alert "coming soon"): **Manage account** and
+**Daily goal** — no destination screens yet. Notifications → `/notifications`,
+Learning topics → `/category-selection`, Restore purchases + Sign out are live.
+
+**Streak freeze mechanic** (`store/progress.ts`). `streakFreezes` count; bought
+via `buyStreakFreeze(cost)`. On launch, `reconcileOnLaunch` spends one freeze to
+bridge a gap of **exactly one** missed day (moves `lastActiveDate` to yesterday so
+the next activity continues the streak). Larger gaps / no freeze still reset. Same
+device-clock caveat as the streak itself (documented in the store).
+
+**Coin-locked categories.** `scripts/build-content.js` now has a `LOCKED` map — 6
+categories at 100 coins (Space, Filmmaking, Coding, Music, Philosophy, Future
+Tech); money + mindfulness stay free. Edit that map + re-run `node
+scripts/build-content.js` to change what's gated. This is what gives the Shop
+unlocks (and the existing prompt-21 unlock flow) real targets — note it gates
+content that used to be free, so new/low-coin users can't open those until they
+earn coins or go Pro.
+
+Loose ends / possible follow-ups:
+- Implement the real **Light / System** themes (currently stored but not applied).
+- Build **Manage account** + **Daily goal** screens (currently Alert stubs).
+- Streak-freeze only bridges a single day; multi-day protection would need a small
+  loop in `reconcileOnLaunch`.
+- Swap the Settings tab **wrench** glyph for a gear if preferred (see icon note).
+
+---
+
+## Light / Dark theme (real, in progress)
+
+Made the Dark/Light/System toggle actually repaint the app (verified: tsc 0,
+eslint 0, 28/28 tests). Previously only Dark was applied.
+
+**Infrastructure** (`src/theme/`):
+- `colors.ts` now exports `darkColors` + `lightColors` (identical keys) and
+  `ThemeColors` (= `Record<key, string>`). `colors` stays = dark for back-compat.
+- `useTheme.ts`: `useTheme()` (active palette), `useThemeMode()` ("light"|"dark",
+  resolves `system` via `useColorScheme`), and `useThemedStyles(makeStyles)`.
+- **Conversion pattern**: each component turns `const styles = StyleSheet.create(...)`
+  into `const makeStyles = (c: ThemeColors) => StyleSheet.create(...)` (colors → `c.`)
+  and calls `const styles = useThemedStyles(makeStyles)`. Inline JSX colors use
+  `const c = useTheme()`. Status bars use `useThemeMode()` to flip light/dark.
+
+**Converted — the entire post-login app is themed:** root `_layout`,
+`(tabs)/_layout`, all 5 tab screens, `category/[slug]`, `category-selection`, the
+lesson reader (`lesson/[id]` + `LessonCard`, `LessonComplete`, `MarkdownBody`,
+`QuizOption`, `QuizRound`), `paywall`, `notifications`, and the shared components
+(CustomTabBar, PrimaryButton, ProgressBar, SearchField, FeedImage, StatPill,
+CoinBalance, StreakBadge, XPBar, DailyGoalCard, ExploreCard, LessonListItem,
+CategoryCard, UnlockCategoryModal). (ContinueCard left static — it's an
+always-amber hero.)
+
+**Still dark (intentional):**
+- Pre-login: `onboarding`, `sign-in`, `sign-up`, auth components — seen once
+  before the toggle exists; a fixed dark look there is fine.
+- `data/announcements.ts` uses static `colors` (data file, no UI).
+
+**Icons.** Baked-white glyphs (`*-white.svg`) are tinted with expo-image
+`tintColor={c.txt}` wherever they sit on a surface (close buttons, chevrons, bell,
+search clear, settings rows, save/next rails, watch-ad play, Progress stat
+check/bookmark). Glyphs on colored badges (check on green/teal, play on amber) and
+colorful assets (mascot, coin, treasure, star, crown, bolt, shield-snow, fire)
+stay as-is. The accent **amber** is shared across both themes on purpose.
+
+Verified: tsc 0, eslint 0, 28/28 tests.
+
+---
+
+## Ship-readiness review + GDPR ads consent + privacy policy
+
+Reviewed the release config and closed two launch gaps (tsc 0, eslint 0).
+
+**Config status (mostly ready):** `eas.json` has dev/preview/production + submit
+(internal track), `appVersionSource: remote` + `autoIncrement`. Lesson images are
+optimized (1483 WebP, 0 PNG). AdMob has a real app ID (`app.json`) and real prod
+unit IDs (`lib/ads.ts`); test IDs are used only in `__DEV__`.
+
+**Hard blocker for a production build:** `PROD_REVENUECAT_ANDROID_KEY` is empty in
+`lib/purchases.ts` — a release build throws until it's set. Get the `goog_…` key:
+RevenueCat dashboard → new **Google Play** app (package `com.jackofalltrades.app`)
+→ **Project settings → API keys → Public app-specific API keys** → the `goog_` one.
+For real purchases also: Play product **`joat_pro`** (= `PRO_PRODUCT_ID`), Play
+service-account JSON in RevenueCat, and an Entitlement **`pro`** (= `PRO_ENTITLEMENT_ID`)
+attached to an Offering. The `test_…` key already works for buy/restore in a dev build.
+
+**Added — GDPR/UMP ads consent.** `lib/ads.ts` `gatherAdsConsent()` calls
+`AdsConsent.gatherConsent()` (fail-open, no-op in Expo Go / outside the EEA), wired
+into `hooks/ads.ts` to run **before** ads preload. ⚠️ The consent form only appears
+once you create a GDPR message in **AdMob console → Privacy & messaging** (and add
+test-device IDs there to preview it); until then it correctly no-ops.
+
+**Added — privacy policy draft:** `docs/privacy-policy.md` (template with
+`[BRACKETED]` placeholders + a Play "Data safety" cheat-sheet). Host it publicly
+(e.g. GitHub Pages) and link the URL in the Play listing. Review before publishing.
+
+**Remaining user-side for launch:** link EAS project (first `eas build`), Play
+Console app + product + service account, RevenueCat prod key + entitlement, host
+the privacy policy, and a preview build to verify ads/purchases on-device.
 
 ---
 
@@ -3579,3 +3811,61 @@ Completed on 2026-07-13:
   native-size exceptions are exclusively the Money & Finance and Mindfulness
   pilot assets that the quality tracker explicitly says to keep unchanged.
 - No loose image-generation work remains for this manifest.
+
+## Settings and profile design references
+
+Completed on 2026-07-14:
+
+- Added `prompt_material/08-settings-screen.png` and
+  `prompt_material/09-profile-shop-screen.png` as visual-only UI references.
+- No application code or navigation wiring was changed for these mockups.
+
+## Google Play reviewer sign-in details
+
+Completed on 2026-07-15:
+
+- Added the dedicated reviewer email account to JOAT's Google Play Console
+  sign-in details, with reusable email/password login instructions and no 2FA.
+- The password is intentionally not stored in this repository.
+- Google Play saved the declaration successfully. The pending console change
+  still needs to be sent for review from Publishing overview with the rest of
+  the release changes.
+
+## Google Play launch setup and Android development build
+
+Updated on 2026-07-15:
+
+- Completed all 13 Play Console setup declarations, including privacy
+  policy, ads, target audience, data safety, health/financial declarations,
+  store category/contact details, free pricing, and the default store listing.
+- Submitted the completed content-rating questionnaire successfully. The
+  working path was to answer all questions and choose **More options → Save**;
+  Google then showed IARC status `Completed` and a submission time of
+  2026-07-15 15:00. The earlier direct-Next attempts had returned transient
+  errors `70592660` and `7F1B62ED`.
+- Created and uploaded the store listing copy, 512x512 icon, 1024x500 feature
+  graphic, and four 1080x1920 screenshots. Source assets are retained in
+  `play-store-assets/`.
+- EAS development build `c1edfecf-3878-4392-ae85-45047f1c9ac4` finished
+  successfully and was downloaded locally as `joat-build.apk`.
+- Connected to the phone over wireless ADB at `192.168.0.6:46477`, installed
+  the clean EAS preview APK successfully, launched it, and captured a real
+  onboarding screenshot. The normalized 1080x1920 capture was added to the
+  Play Store phone screenshots and saved.
+- Google requires at least 12 opted-in closed-test users for at least 14 days
+  before this new personal developer account can apply for production access.
+  The console currently reports 0 opted-in testers.
+- Do not send the prepared Play Console changes for review or submit a release
+  until the user explicitly confirms the final submission.
+
+## Savepoint before heavy feature experiment
+
+Created on 2026-07-15:
+
+- Preserved the current working application state before starting a heavy,
+  high-risk feature experiment.
+- The checkpoint is tagged `savepoint-before-heavy-feature-2026-07-15`.
+- The experiment continues on branch `codex/heavy-feature-experiment`, keeping
+  the tagged checkpoint available for a clean rollback.
+- Local APKs, logs, temporary build output, Playwright state, Play Store setup
+  assets, and device screenshots are intentionally excluded from Git.

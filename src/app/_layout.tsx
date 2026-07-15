@@ -11,7 +11,7 @@ import { PostHogProvider } from "posthog-react-native";
 import { useIdentifyUser } from "@/hooks/analytics";
 import { initPurchases } from "@/hooks/purchases";
 import { posthog } from "@/lib/posthog";
-import { colors, fonts } from "@/theme";
+import { fonts, useTheme } from "@/theme";
 
 /**
  * Headless bridge: identifies the signed-in user in PostHog. Lives inside the
@@ -32,6 +32,7 @@ const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const c = useTheme();
   const [loaded, error] = useFonts(fonts);
 
   useEffect(() => {
@@ -70,7 +71,7 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            contentStyle: { backgroundColor: colors.ink },
+            contentStyle: { backgroundColor: c.ink },
           }}
         >
           {/* Paywall slides up over whatever opened it (e.g. Profile). */}

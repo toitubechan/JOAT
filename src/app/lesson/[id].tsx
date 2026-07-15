@@ -47,7 +47,16 @@ import { getLessonById } from "@/lib/content";
 import { categoryCoinCost, slugForCategory } from "@/lib/feed";
 import { useProgressStore } from "@/store";
 import { categoryBySlug } from "@/data/categories";
-import { colors, fontFamily, spacing, typeScale, type CategorySlug } from "@/theme";
+import {
+  fontFamily,
+  spacing,
+  typeScale,
+  useTheme,
+  useThemeMode,
+  useThemedStyles,
+  type CategorySlug,
+  type ThemeColors,
+} from "@/theme";
 import type { Card } from "@/types/content";
 
 /** XP granted the first time each content card is viewed (the on-card chip). */
@@ -96,6 +105,9 @@ function LessonReader({
   lesson: NonNullable<ReturnType<typeof getLessonById>>;
   startCard: number;
 }) {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const barStyle = useThemeMode() === "light" ? "dark" : "light";
   const insets = useSafeAreaInsets();
 
   // Progress store actions / values.
@@ -118,7 +130,10 @@ function LessonReader({
   const [phase, setPhase] = useState<Phase>("cards");
   const [index, setIndex] = useState(initialIndex);
   const [pageHeight, setPageHeight] = useState(0);
-  const [saved, setSaved] = useState(false);
+  // Bookmark state lives in the persisted store so it survives across sessions
+  // and shows up in the saved list (Profile).
+  const saved = useProgressStore((s) => s.savedLessons.includes(lesson.id));
+  const toggleSaved = useProgressStore((s) => s.toggleSaved);
 
   const listRef = useRef<FlatList<Card>>(null);
   // Scroll offset when the current drag started, for distance-based snapping.
@@ -281,7 +296,7 @@ function LessonReader({
     return (
       <>
         <Stack.Screen options={{ animation: "fade" }} />
-        <StatusBar style="light" />
+        <StatusBar style={barStyle} />
         <LessonComplete
           lesson={lesson}
           xpEarned={summary.xp}
@@ -299,7 +314,7 @@ function LessonReader({
   if (phase === "quiz") {
     return (
       <>
-        <StatusBar style="light" />
+        <StatusBar style={barStyle} />
         <QuizRound
           lesson={lesson}
           rewardsEnabled={rewardsEnabled}
@@ -313,14 +328,14 @@ function LessonReader({
 
   // --- Cards phase ---------------------------------------------------------
   const reservedBottom = 116 + insets.bottom;
-  const dotColor = categoryBySlug(slugForCategory(lesson.category) ?? "")?.tint ?? colors.amber;
+  const dotColor = categoryBySlug(slugForCategory(lesson.category) ?? "")?.tint ?? c.amber;
   const shortCategory = lesson.category.split(" & ")[0];
   const isLast = index >= lastIndex;
 
   return (
     <View style={styles.root}>
       <Stack.Screen options={{ animation: "slide_from_bottom" }} />
-      <StatusBar style="light" />
+      <StatusBar style={barStyle} />
 
       {/* Header: category chip · n/N · close, then a segmented progress bar */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
@@ -341,7 +356,7 @@ function LessonReader({
             accessibilityLabel="Close lesson"
             style={({ pressed }) => pressed && styles.dim}
           >
-            <Image source={images.closeWhite} style={styles.close} contentFit="contain" />
+            <Image source={images.closeWhite} style={styles.close} contentFit="contain" tintColor={c.txt} />
           </Pressable>
         </View>
 
@@ -383,7 +398,7 @@ function LessonReader({
           <RailButton
             icon={saved ? "bookmarkFilled" : "bookmark"}
             label="Save"
-            onPress={() => setSaved((v) => !v)}
+            onPress={() => toggleSaved(lesson.id)}
           />
         </View>
 
@@ -401,7 +416,7 @@ function LessonReader({
               accessibilityLabel={isLast ? "Start the quiz" : "Next card"}
               style={({ pressed }) => [styles.chevron, pressed && styles.dim]}
             >
-              <Image source={images.chevronUp} style={styles.chevronIcon} contentFit="contain" />
+              <Image source={images.chevronUp} style={styles.chevronIcon} contentFit="contain" tintColor={c.txt} />
             </Pressable>
             <Text style={styles.swipeHint} pointerEvents="none">
               {isLast ? "Tap to start the quiz" : "Swipe up for the next card"}
@@ -423,6 +438,8 @@ function RailButton({
   label: string;
   onPress: () => void;
 }) {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       onPress={onPress}
@@ -433,7 +450,7 @@ function RailButton({
       {({ pressed }) => (
         <>
           <View style={[styles.railCircle, pressed && styles.dim]}>
-            <Image source={images[icon]} style={styles.railIcon} contentFit="contain" />
+            <Image source={images[icon]} style={styles.railIcon} contentFit="contain" tintColor={c.txt} />
           </View>
           <Text style={styles.railLabel}>{label}</Text>
         </>
@@ -443,10 +460,12 @@ function RailButton({
 }
 
 function LessonUnavailable() {
+  const styles = useThemedStyles(makeStyles);
+  const barStyle = useThemeMode() === "light" ? "dark" : "light";
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.root, styles.unavailable, { paddingTop: insets.top }]}>
-      <StatusBar style="light" />
+      <StatusBar style={barStyle} />
       <Text style={styles.unavailableText}>This lesson isn&apos;t available yet.</Text>
       <Pressable
         onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
@@ -461,13 +480,15 @@ function LessonUnavailable() {
 
 /** Locked-category state: a coin-locked lesson reached before unlocking. */
 function LessonLocked({ slug }: { slug: CategorySlug }) {
+  const styles = useThemedStyles(makeStyles);
+  const barStyle = useThemeMode() === "light" ? "dark" : "light";
   const insets = useSafeAreaInsets();
   const [showUnlock, setShowUnlock] = useState(false);
   const category = categories.find((c) => c.slug === slug);
 
   return (
     <View style={[styles.root, styles.unavailable, { paddingTop: insets.top }]}>
-      <StatusBar style="light" />
+      <StatusBar style={barStyle} />
       <Image source={images.treasure} style={styles.lockedImage} contentFit="contain" />
       <Text style={styles.unavailableText}>
         {category?.title ?? "This category"} is locked
@@ -502,8 +523,9 @@ function LessonLocked({ slug }: { slug: CategorySlug }) {
 
 const RAIL_CIRCLE = spacing.railBtn; // 48
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.ink },
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.ink },
 
   header: { paddingHorizontal: spacing.screen },
   headerRow: { flexDirection: "row", alignItems: "center", gap: 12 },
@@ -513,9 +535,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     alignSelf: "flex-start",
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -523,20 +545,20 @@ const styles = StyleSheet.create({
   chipDot: { width: 8, height: 8, borderRadius: 4 },
   chipText: {
     flex: 1,
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.caption.size,
   },
   count: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.bodySm.size,
   },
   close: { width: 22, height: 22 },
 
   segments: { flexDirection: "row", gap: 5, marginTop: 14 },
-  segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.line },
-  segmentOn: { backgroundColor: colors.amber },
+  segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: c.line },
+  segmentOn: { backgroundColor: c.amber },
 
   pager: { flex: 1 },
   list: { flex: 1 },
@@ -554,15 +576,15 @@ const styles = StyleSheet.create({
     width: RAIL_CIRCLE,
     height: RAIL_CIRCLE,
     borderRadius: RAIL_CIRCLE / 2,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     alignItems: "center",
     justifyContent: "center",
   },
   railIcon: { width: 20, height: 20 },
   railLabel: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.caption.size,
   },
@@ -581,7 +603,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
@@ -591,7 +613,7 @@ const styles = StyleSheet.create({
   chevron: { padding: 2 },
   chevronIcon: { width: 22, height: 22 },
   swipeHint: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
   },
@@ -600,20 +622,20 @@ const styles = StyleSheet.create({
 
   unavailable: { alignItems: "center", justifyContent: "center", gap: 16 },
   unavailableText: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.h4.size,
     textAlign: "center",
     paddingHorizontal: spacing.screen,
   },
   unavailableLink: {
-    color: colors.amber,
+    color: c.amber,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.body.size,
   },
   lockedImage: { width: 96, height: 96, marginBottom: 4 },
   lockedSub: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
     textAlign: "center",
@@ -621,7 +643,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.screen,
   },
   lockedBack: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.bodySm.size,
   },

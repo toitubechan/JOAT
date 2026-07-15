@@ -16,7 +16,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { FeedImage } from "@/components/FeedImage";
 import { MarkdownBody } from "@/components/lesson/MarkdownBody";
-import { colors, fontFamily, radii, spacing, typeScale } from "@/theme";
+import { fontFamily, radii, spacing, typeScale, useThemedStyles, type ThemeColors } from "@/theme";
 import type { Card } from "@/types/content";
 
 // The fixed save rail sits in the right gutter; inset the body so its mid-card
@@ -50,6 +50,7 @@ function readTimeLabel(body: string): string {
 }
 
 function LessonCardBase({ card, pageHeight, reservedBottom }: LessonCardProps) {
+  const styles = useThemedStyles(makeStyles);
   const hasImage = card.image != null;
   const imageHeight = Math.min(210, Math.max(150, Math.round(pageHeight * 0.26)));
 
@@ -116,7 +117,8 @@ function LessonCardBase({ card, pageHeight, reservedBottom }: LessonCardProps) {
 
 export const LessonCard = memo(LessonCardBase);
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   content: {
     paddingHorizontal: spacing.screen,
     paddingTop: 12,
@@ -124,7 +126,7 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     borderRadius: radii.card,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     marginBottom: 22,
   },
   kicker: {
@@ -135,13 +137,13 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   kickerText: {
-    color: colors.amber,
+    color: c.amber,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.caption.size,
     letterSpacing: 1,
   },
   title: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: typeScale.h1.family,
     fontSize: typeScale.h1.size,
     lineHeight: typeScale.h1.lineHeight,

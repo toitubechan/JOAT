@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "Jack_Of_All_Trades",
+    "name": "JOAT",
     "slug": "Jack_Of_All_Trades",
+    "owner": "chadevv",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -45,6 +46,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": false
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8162068a-c110-49a1-a674-2fa84d46dd15"
+      }
     }
   }
 }

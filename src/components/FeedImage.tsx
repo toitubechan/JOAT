@@ -19,7 +19,7 @@ import {
   type ImageKey,
   type ImageSource,
 } from "@/constants/images";
-import { colors } from "@/theme";
+import { useTheme } from "@/theme";
 
 // Neutral blur shown under the image while it loads (valid base-83 blurhash).
 const BLURHASH = "LGF5?xYk^6#M@-5c,1J5@[or[Q6.";
@@ -39,6 +39,7 @@ export function FeedImage({
   style,
   contentFit = "cover",
 }: FeedImageProps) {
+  const c = useTheme();
   const hasKey = imageKey != null && imageKey in images;
   // A bundled asset is instant; a remote source (a CDN-served key, or the Picsum
   // fallback for an unknown key) needs the surface backdrop + blur-up.
@@ -51,7 +52,7 @@ export function FeedImage({
   return (
     <Image
       source={source}
-      style={[remote && { backgroundColor: colors.surface }, style]}
+      style={[remote && { backgroundColor: c.surface }, style]}
       contentFit={contentFit}
       placeholder={remote ? BLURHASH : undefined}
       placeholderContentFit={contentFit}

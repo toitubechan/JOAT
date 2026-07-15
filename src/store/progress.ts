@@ -99,6 +99,15 @@ function yesterdayKey(): string {
   return `${d.getFullYear()}-${month}-${day}`;
 }
 
+/** Whole days from a "YYYY-MM-DD" date to today (local midnight). 0 = today. */
+function daysSince(dateStr: string): number {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const then = new Date(y, m - 1, d);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((today.getTime() - then.getTime()) / 86_400_000);
+}
+
 /** Where the user currently is in a lesson feed. */
 type CurrentCard = { lessonId: string; cardIndex: number } | null;
 
@@ -116,10 +125,14 @@ type ProgressState = {
   dailyStreak: number;
   /** Last day the streak was bumped, "YYYY-MM-DD". */
   lastActiveDate: string | null;
+  /** Streak-freeze tokens (Shop). Each one bridges a single missed day on launch. */
+  streakFreezes: number;
   // --- Completion ---
   completedLessons: string[];
   /** Completed card keys, `${lessonId}:${cardIndex}`. */
   completedCards: string[];
+  /** Lesson ids the user bookmarked ("Save" in the reader). */
+  savedLessons: string[];
   // --- Current card / quiz state ---
   currentCard: CurrentCard;
   /** In-progress quiz answers, keyed `${lessonId}:${questionIndex}` -> option index. */
@@ -137,6 +150,8 @@ type ProgressState = {
   addXp: (amount: number) => void;
   /** Count today toward the streak (+1 if yesterday was active, else restart at 1). */
   bumpStreak: () => void;
+  /** Buy one streak-freeze token for `cost` coins; false if the balance is too low. */
+  buyStreakFreeze: (cost: number) => boolean;
   /**
    * Run once on launch (from `onRehydrateStorage`): drop a streak that missed a
    * day while the app was closed, and resync the cached level from total XP.
@@ -147,6 +162,8 @@ type ProgressState = {
   setCurrentCard: (lessonId: string, cardIndex: number) => void;
   clearCurrentCard: () => void;
   answerQuiz: (lessonId: string, questionIndex: number, optionIndex: number) => void;
+  /** Bookmark / un-bookmark a lesson (the reader's Save button). */
+  toggleSaved: (lessonId: string) => void;
   setPro: (isPro: boolean) => void;
   /**
    * Unlock a coin-locked category by spending `cost` coins. Idempotent (an
@@ -161,6 +178,8 @@ type ProgressState = {
   // --- Selectors ---
   isLessonComplete: (lessonId: string) => boolean;
   isCardComplete: (lessonId: string, cardIndex: number) => boolean;
+  /** True if the lesson is bookmarked. */
+  isSaved: (lessonId: string) => boolean;
   /** True if the category is unlocked — Pro unlocks every category. */
   isCategoryUnlocked: (categoryId: string) => boolean;
 };
@@ -174,8 +193,10 @@ const initialState = {
   dailyXpDate: null as string | null,
   dailyStreak: 0,
   lastActiveDate: null as string | null,
+  streakFreezes: 0,
   completedLessons: [] as string[],
   completedCards: [] as string[],
+  savedLessons: [] as string[],
   currentCard: null as CurrentCard,
   quizAnswers: {} as Record<string, number>,
   isPro: false,
@@ -230,19 +251,41 @@ export const useProgressStore = create<ProgressState>()(
           return { dailyStreak, lastActiveDate: today };
         }),
 
+      buyStreakFreeze: (cost) => {
+        // Reuse spendCoins for the guard + balance check; only mint a token when
+        // the purchase actually goes through.
+        if (!get().spendCoins(cost)) return false;
+        set((state) => ({ streakFreezes: state.streakFreezes + 1 }));
+        return true;
+      },
+
       reconcileOnLaunch: () =>
         set((state) => {
           // Keep the cached level honest with the (curve-aware) XP total.
           const level = levelForXp(state.xp);
-          // The streak is still alive only if the last active day was today or
-          // yesterday; any larger gap means a day was missed, so it resets to 0.
-          // We leave `lastActiveDate` untouched: the next activity's bumpStreak
-          // sees the gap and correctly restarts the count at 1.
-          const alive =
-            state.lastActiveDate === todayKey() ||
-            state.lastActiveDate === yesterdayKey();
-          const dailyStreak = alive ? state.dailyStreak : 0;
-          return { level, dailyStreak };
+
+          // Streak upkeep. The streak is alive if the last active day was today
+          // or yesterday. If exactly one day was missed (gap of 2) and the user
+          // holds a streak-freeze, spend one to bridge the gap — we move the
+          // last-active marker to yesterday so the next activity continues the
+          // streak. Any larger gap (or no freeze) resets it to 0; `lastActiveDate`
+          // is left untouched there so the next bumpStreak restarts the count.
+          const last = state.lastActiveDate;
+          let dailyStreak = state.dailyStreak;
+          let lastActiveDate = state.lastActiveDate;
+          let streakFreezes = state.streakFreezes;
+          if (last) {
+            const gap = daysSince(last);
+            if (gap <= 1) {
+              // Active today or yesterday — streak stands.
+            } else if (gap === 2 && streakFreezes > 0 && dailyStreak > 0) {
+              streakFreezes -= 1;
+              lastActiveDate = yesterdayKey();
+            } else {
+              dailyStreak = 0;
+            }
+          }
+          return { level, dailyStreak, lastActiveDate, streakFreezes };
         }),
 
       markCardComplete: (lessonId, cardIndex) =>
@@ -271,6 +314,13 @@ export const useProgressStore = create<ProgressState>()(
           },
         })),
 
+      toggleSaved: (lessonId) =>
+        set((state) => ({
+          savedLessons: state.savedLessons.includes(lessonId)
+            ? state.savedLessons.filter((id) => id !== lessonId)
+            : [lessonId, ...state.savedLessons],
+        })),
+
       setPro: (isPro) => set({ isPro }),
 
       unlockCategory: (categoryId, cost) => {
@@ -290,6 +340,8 @@ export const useProgressStore = create<ProgressState>()(
 
       isCardComplete: (lessonId, cardIndex) =>
         get().completedCards.includes(cardKey(lessonId, cardIndex)),
+
+      isSaved: (lessonId) => get().savedLessons.includes(lessonId),
 
       isCategoryUnlocked: (categoryId) => {
         const state = get();

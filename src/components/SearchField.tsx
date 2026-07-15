@@ -17,7 +17,7 @@ import {
 } from "react-native";
 
 import { images } from "@/constants/images";
-import { colors, fontFamily, radii, typeScale } from "@/theme";
+import { fontFamily, radii, typeScale, useTheme, useThemedStyles, type ThemeColors } from "@/theme";
 
 type SearchFieldProps = {
   value: string;
@@ -32,6 +32,8 @@ export function SearchField({
   placeholder = "Search",
   style,
 }: SearchFieldProps) {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const hasText = value.length > 0;
 
   return (
@@ -41,7 +43,7 @@ export function SearchField({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.txtMuted}
+        placeholderTextColor={c.txtMuted}
         style={styles.input}
         autoCapitalize="none"
         autoCorrect={false}
@@ -56,39 +58,40 @@ export function SearchField({
           accessibilityLabel="Clear search"
           style={({ pressed }) => [styles.clear, pressed && styles.pressed]}
         >
-          <Image source={images.closeWhite} style={styles.clearIcon} contentFit="contain" />
+          <Image source={images.closeWhite} style={styles.clearIcon} contentFit="contain" tintColor={c.txt} />
         </Pressable>
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  field: {
-    height: 48,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: radii.input,
-    paddingHorizontal: 16,
-  },
-  icon: { width: 18, height: 18 },
-  input: {
-    flex: 1,
-    color: colors.txt,
-    fontFamily: fontFamily.regular,
-    fontSize: typeScale.bodyLg.size,
-    padding: 0,
-  },
-  clear: {
-    width: 22,
-    height: 22,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  clearIcon: { width: 14, height: 14 },
-  pressed: { opacity: 0.6 },
-});
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+    field: {
+      height: 48,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.line,
+      borderRadius: radii.input,
+      paddingHorizontal: 16,
+    },
+    icon: { width: 18, height: 18 },
+    input: {
+      flex: 1,
+      color: c.txt,
+      fontFamily: fontFamily.regular,
+      fontSize: typeScale.bodyLg.size,
+      padding: 0,
+    },
+    clear: {
+      width: 22,
+      height: 22,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    clearIcon: { width: 14, height: 14 },
+    pressed: { opacity: 0.6 },
+  });

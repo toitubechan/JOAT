@@ -4,10 +4,10 @@ import { useAuth } from "@clerk/expo";
 
 import { CustomTabBar } from "@/components/CustomTabBar";
 import { usePreferencesStore } from "@/store";
-import { colors } from "@/theme";
+import { useTheme, useThemedStyles, type ThemeColors } from "@/theme";
 
 /**
- * Authenticated tab area (Feed / Explore / Progress / Profile).
+ * Authenticated tab area (Feed / Explore / Progress / Profile / Settings).
  *
  * Gates entry the same way the old root screen did: hold while Clerk and the
  * saved selection hydrate, send signed-out users to onboarding, and bounce
@@ -18,6 +18,8 @@ export default function TabsLayout() {
   const { isLoaded, isSignedIn } = useAuth();
   const hasHydrated = usePreferencesStore((s) => s.hasHydrated);
   const selectedTopics = usePreferencesStore((s) => s.selectedTopics);
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
 
   // Hold an empty screen until Clerk has restored the session from the cache,
   // so we don't flash a redirect to onboarding for a returning, signed-in user.
@@ -43,17 +45,19 @@ export default function TabsLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        sceneStyle: { backgroundColor: colors.ink },
+        sceneStyle: { backgroundColor: c.ink },
       }}
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="explore" />
       <Tabs.Screen name="progress" />
       <Tabs.Screen name="profile" />
+      <Tabs.Screen name="settings" />
     </Tabs>
   );
 }
 
-const styles = StyleSheet.create({
-  gate: { flex: 1, backgroundColor: colors.ink },
-});
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+    gate: { flex: 1, backgroundColor: c.ink },
+  });

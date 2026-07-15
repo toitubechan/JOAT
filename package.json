@@ -2,6 +2,9 @@
   "name": "jack_of_all_trades",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=20.0.0 <23.0.0"
+  },
   "dependencies": {
     "@clerk/expo": "^3.4.2",
     "@expo/ui": "~56.0.17",

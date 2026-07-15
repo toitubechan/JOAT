@@ -1,0 +1,38 @@
+# Dependencies and generated output
+node_modules/
+.git/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+ios/
+android/
+.kotlin/
+*.tsbuildinfo
+
+# Local credentials and environment overrides
+.env*.local
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# Local tooling, generation sources, and temporary artifacts
+.claude/
+.agents/
+.playwright-cli/
+image-pipeline/
+prompt_material/
+tmp/
+output/
+skills-lock.json
+
+# Logs and platform metadata
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.DS_Store
+.metro-health-check*
+*.orig.*

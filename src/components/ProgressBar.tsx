@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { Animated, Easing, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 
-import { colors } from "@/theme";
+import { useTheme, useThemedStyles, type ThemeColors } from "@/theme";
 
 type ProgressBarProps = {
   /** Fill fraction, 0–1 (clamped). */
@@ -22,6 +22,8 @@ type ProgressBarProps = {
 };
 
 export function ProgressBar({ progress, height = 9, animated = false, style }: ProgressBarProps) {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const pct = Math.max(0, Math.min(1, progress));
   const radius = height / 2;
 
@@ -53,7 +55,7 @@ export function ProgressBar({ progress, height = 9, animated = false, style }: P
     <View style={[styles.track, { height, borderRadius: radius }, style]}>
       <Animated.View style={[styles.fill, { width, borderRadius: radius }]}>
         <LinearGradient
-          colors={[colors.amber, colors.amberDeep]}
+          colors={[c.amber, c.amberDeep]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.gradient}
@@ -63,12 +65,13 @@ export function ProgressBar({ progress, height = 9, animated = false, style }: P
   );
 }
 
-const styles = StyleSheet.create({
-  track: {
-    width: "100%",
-    backgroundColor: colors.line,
-    overflow: "hidden",
-  },
-  fill: { height: "100%", overflow: "hidden" },
-  gradient: { flex: 1 },
-});
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+    track: {
+      width: "100%",
+      backgroundColor: c.line,
+      overflow: "hidden",
+    },
+    fill: { height: "100%", overflow: "hidden" },
+    gradient: { flex: 1 },
+  });

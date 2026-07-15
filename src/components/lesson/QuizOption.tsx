@@ -10,7 +10,7 @@ import { Image } from "expo-image";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { images } from "@/constants/images";
-import { colors, fontFamily, radii, typeScale } from "@/theme";
+import { fontFamily, radii, typeScale, useThemedStyles, type ThemeColors } from "@/theme";
 
 export type QuizOptionState = "idle" | "correct" | "wrong" | "muted";
 
@@ -22,6 +22,7 @@ type QuizOptionProps = {
 };
 
 export function QuizOption({ text, state, disabled, onPress }: QuizOptionProps) {
+  const styles = useThemedStyles(makeStyles);
   const isCorrect = state === "correct";
   const isWrong = state === "wrong";
 
@@ -66,7 +67,8 @@ export function QuizOption({ text, state, disabled, onPress }: QuizOptionProps) 
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -74,18 +76,18 @@ const styles = StyleSheet.create({
     minHeight: 64,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1.5,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.card,
   },
   rowCorrect: {
-    backgroundColor: colors.successBg,
-    borderColor: colors.success,
+    backgroundColor: c.successBg,
+    borderColor: c.success,
   },
   rowWrong: {
-    backgroundColor: colors.dangerBg,
-    borderColor: colors.danger,
+    backgroundColor: c.dangerBg,
+    borderColor: c.danger,
   },
   rowMuted: { opacity: 0.55 },
   pressed: { opacity: 0.85 },
@@ -95,27 +97,27 @@ const styles = StyleSheet.create({
     height: 26,
     borderRadius: 13,
     borderWidth: 2,
-    borderColor: colors.txtMuted,
+    borderColor: c.txtMuted,
     alignItems: "center",
     justifyContent: "center",
   },
   markerCorrect: {
-    backgroundColor: colors.success,
-    borderColor: colors.success,
+    backgroundColor: c.success,
+    borderColor: c.success,
   },
   markerWrong: {
-    backgroundColor: colors.danger,
-    borderColor: colors.danger,
+    backgroundColor: c.danger,
+    borderColor: c.danger,
   },
   markerIcon: { width: 13, height: 13 },
 
   text: {
     flex: 1,
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.h4.size,
     lineHeight: 22,
   },
-  textCorrect: { color: colors.successText },
-  textWrong: { color: colors.txt },
+  textCorrect: { color: c.successText },
+  textWrong: { color: c.txt },
 });

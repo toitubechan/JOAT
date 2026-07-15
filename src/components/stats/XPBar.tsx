@@ -18,13 +18,14 @@ import { images } from "@/constants/images";
 import { usePopOnIncrease } from "@/hooks/animations";
 import { useProgressStore } from "@/store";
 import { levelInfo } from "@/store/progress";
-import { colors, fontFamily, radii, typeScale } from "@/theme";
+import { fontFamily, radii, typeScale, useThemedStyles, type ThemeColors } from "@/theme";
 
 type XPBarProps = {
   style?: StyleProp<ViewStyle>;
 };
 
 export function XPBar({ style }: XPBarProps) {
+  const styles = useThemedStyles(makeStyles);
   const xp = useProgressStore((s) => s.xp);
   const { level, xpIntoLevel, xpForLevel } = useMemo(() => levelInfo(xp), [xp]);
   const scale = usePopOnIncrease(xp);
@@ -50,7 +51,8 @@ export function XPBar({ style }: XPBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -63,29 +65,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radii.tile,
-    backgroundColor: colors.coinBg,
+    backgroundColor: c.coinBg,
     borderWidth: 1,
-    borderColor: colors.coinBorder,
+    borderColor: c.coinBorder,
   },
   bolt: { width: 16, height: 16 },
   levelText: {
-    color: colors.amber,
+    color: c.amber,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.bodySm.size,
   },
   xpText: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h4.size,
   },
   xpMuted: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.bodySm.size,
   },
   bar: { marginTop: 14, height: 10 },
   caption: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.caption.size,
     marginTop: 8,

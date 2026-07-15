@@ -14,7 +14,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import { colors, fontFamily, radii, spacing } from "@/theme";
+import { fontFamily, radii, spacing, useTheme, useThemedStyles, type ThemeColors } from "@/theme";
 
 type PrimaryButtonProps = {
   label: string;
@@ -30,6 +30,8 @@ export function PrimaryButton({
   disabled,
   style,
 }: PrimaryButtonProps) {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Pressable
       onPress={onPress}
@@ -42,7 +44,7 @@ export function PrimaryButton({
       ]}
     >
       <LinearGradient
-        colors={[colors.amber, colors.amberDeep]}
+        colors={[c.amber, c.amberDeep]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
@@ -53,22 +55,23 @@ export function PrimaryButton({
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    height: spacing.btnH,
-    borderRadius: radii.card,
-    overflow: "hidden",
-  },
-  pressed: { opacity: 0.9 },
-  disabled: { opacity: 0.4 },
-  gradient: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  label: {
-    color: colors.txtOnAmber,
-    fontFamily: fontFamily.bold,
-    fontSize: 17,
-  },
-});
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
+    button: {
+      height: spacing.btnH,
+      borderRadius: radii.card,
+      overflow: "hidden",
+    },
+    pressed: { opacity: 0.9 },
+    disabled: { opacity: 0.4 },
+    gradient: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    label: {
+      color: c.txtOnAmber,
+      fontFamily: fontFamily.bold,
+      fontSize: 17,
+    },
+  });

@@ -1607,6 +1607,16 @@ import walletIcon from "../../assets/images/icons/wallet-c.svg";
 import panIcon from "../../assets/images/icons/pan-c.svg";
 import flaskIcon from "../../assets/images/icons/flask-c.svg";
 import wrenchIcon from "../../assets/images/icons/wrench-c.svg";
+import wrenchDark from "../../assets/images/icons/wrench-dark.svg";
+import wrenchMut from "../../assets/images/icons/wrench-mut.svg";
+import starAmber from "../../assets/images/icons/star-amber.svg";
+import crownAmber from "../../assets/images/icons/crown-amber.svg";
+import paletteIcon from "../../assets/images/icons/palette-white.svg";
+import restoreIcon from "../../assets/images/icons/restore-white.svg";
+import targetIcon from "../../assets/images/icons/target-white.svg";
+import bookIcon from "../../assets/images/icons/book-white.svg";
+import logoutIcon from "../../assets/images/icons/logout-white.svg";
+import shieldSnow from "../../assets/images/icons/shield-snow.svg";
 import brainIcon from "../../assets/images/icons/brain-c.svg";
 import heartIcon from "../../assets/images/icons/heart-c.svg";
 import scrollIcon from "../../assets/images/icons/scroll-c.svg";
@@ -3243,6 +3253,16 @@ export const images = {
   panIcon,
   flaskIcon,
   wrenchIcon,
+  wrenchDark,
+  wrenchMut,
+  starAmber,
+  crownAmber,
+  paletteIcon,
+  restoreIcon,
+  targetIcon,
+  bookIcon,
+  logoutIcon,
+  shieldSnow,
   brainIcon,
   heartIcon,
   scrollIcon,

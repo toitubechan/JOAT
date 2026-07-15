@@ -20,7 +20,7 @@ import { useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors, fontFamily, typeScale } from "@/theme";
+import { fontFamily, typeScale, useTheme, useThemedStyles, type ThemeColors } from "@/theme";
 
 type MarkdownBodyProps = {
   /** Card body markdown (image line + heading already stripped upstream). */
@@ -111,6 +111,7 @@ function parseInline(text: string): Span[] {
 }
 
 function Inline({ text }: { text: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <>
       {parseInline(text).map((span, i) => (
@@ -132,6 +133,7 @@ function Inline({ text }: { text: string }) {
 }
 
 function BlockView({ block }: { block: Block }) {
+  const styles = useThemedStyles(makeStyles);
   if (block.type === "para") {
     return (
       <Text style={styles.paragraph}>
@@ -166,10 +168,13 @@ function BlockView({ block }: { block: Block }) {
 export function MarkdownBody({
   body,
   collapsedMaxHeight,
-  fadeColor = colors.ink,
+  fadeColor,
   expanded: expandedProp,
   onToggleExpanded,
 }: MarkdownBodyProps) {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
+  const resolvedFade = fadeColor ?? c.ink;
   const blocks = parseBlocks(body);
   const [fullHeight, setFullHeight] = useState<number | null>(null);
   const [internalExpanded, setInternalExpanded] = useState(false);
@@ -209,7 +214,7 @@ export function MarkdownBody({
         {showCollapsed && (
           <LinearGradient
             pointerEvents="none"
-            colors={["transparent", fadeColor]}
+            colors={["transparent", resolvedFade]}
             style={styles.fade}
           />
         )}
@@ -229,31 +234,32 @@ export function MarkdownBody({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   // Off-layout measuring copy: full width (so wrapping matches the visible copy),
   // invisible, non-interactive, and absolute so it never affects real layout.
   measure: { position: "absolute", left: 0, right: 0, top: 0, opacity: 0, zIndex: -1 },
   blockGap: { marginTop: 14 },
 
   paragraph: {
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: typeScale.bodyLg.family,
     fontSize: typeScale.bodyLg.size,
     lineHeight: typeScale.bodyLg.lineHeight,
   },
   bold: {
-    color: colors.amber,
+    color: c.amber,
     fontFamily: fontFamily.semibold,
   },
   italic: {
-    color: colors.teal,
+    color: c.teal,
     fontFamily: fontFamily.medium,
   },
 
   bulletList: { gap: 10 },
   bulletRow: { flexDirection: "row", paddingRight: 4 },
   bulletDot: {
-    color: colors.amber,
+    color: c.amber,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.bodyLg.size,
     lineHeight: typeScale.bodyLg.lineHeight,
@@ -261,7 +267,7 @@ const styles = StyleSheet.create({
   },
   bulletText: {
     flex: 1,
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: typeScale.bodyLg.family,
     fontSize: typeScale.bodyLg.size,
     lineHeight: typeScale.bodyLg.lineHeight,
@@ -269,19 +275,19 @@ const styles = StyleSheet.create({
 
   callout: {
     flexDirection: "row",
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: c.surfaceRaised,
     borderRadius: 16,
     padding: 16,
   },
   calloutBar: {
     width: 3,
     borderRadius: 2,
-    backgroundColor: colors.teal,
+    backgroundColor: c.teal,
     marginRight: 12,
   },
   calloutText: {
     flex: 1,
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.body.size,
     lineHeight: typeScale.body.lineHeight,
@@ -297,7 +303,7 @@ const styles = StyleSheet.create({
 
   readMore: { marginTop: 12, alignSelf: "flex-start" },
   readMoreText: {
-    color: colors.amber,
+    color: c.amber,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.bodySm.size,
   },

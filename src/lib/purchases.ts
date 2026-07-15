@@ -86,7 +86,7 @@ export const PRO_PRICE_LABEL = "$4.99";
  * throws otherwise).
  */
 const TEST_REVENUECAT_ANDROID_KEY = "test_FugyRNdDgVaJFcsOhSwylGtzeEx";
-const PROD_REVENUECAT_ANDROID_KEY = "";
+const PROD_REVENUECAT_ANDROID_KEY = "goog_CuwQeEvbRpTYPYVnoCxyuytbWtv";
 
 /**
  * Resolve the public SDK key: the Test Store key in development, the real Google

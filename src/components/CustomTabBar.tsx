@@ -23,7 +23,7 @@ import { Image } from "expo-image";
 import { Tabs } from "expo-router";
 
 import { images, type ImageKey } from "@/constants/images";
-import { colors, spacing, typeScale } from "@/theme";
+import { spacing, typeScale, useThemedStyles, type ThemeColors } from "@/theme";
 
 // Derive the tab-bar prop shape from the Tabs component so we don't depend on
 // an internal react-navigation import path.
@@ -39,6 +39,7 @@ const TAB_META: Record<string, TabMeta> = {
   explore: { label: "Explore", activeIcon: "compassDark", inactiveIcon: "compassMut" },
   progress: { label: "Progress", activeIcon: "libraryDark", inactiveIcon: "libraryMut" },
   profile: { label: "Profile", activeIcon: "userDark", inactiveIcon: "userMut" },
+  settings: { label: "Settings", activeIcon: "wrenchDark", inactiveIcon: "wrenchMut" },
 };
 
 const BAR_HEIGHT = spacing.tabH; // 76
@@ -46,6 +47,7 @@ const CIRCLE = 52;
 const ICON = 24;
 
 export function CustomTabBar({ state, navigation, insets }: TabBarProps) {
+  const styles = useThemedStyles(makeStyles);
   const [barWidth, setBarWidth] = useState(0);
   const tabWidth = barWidth / state.routes.length;
 
@@ -140,11 +142,12 @@ export function CustomTabBar({ state, navigation, insets }: TabBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   bar: {
-    backgroundColor: colors.tabbar,
+    backgroundColor: c.tabbar,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
+    borderTopColor: c.line,
   },
   row: {
     height: BAR_HEIGHT,
@@ -160,7 +163,7 @@ const styles = StyleSheet.create({
   },
   icon: { width: ICON, height: ICON },
   label: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: typeScale.caption.family,
     fontSize: typeScale.caption.size,
     lineHeight: typeScale.caption.lineHeight,
@@ -172,7 +175,7 @@ const styles = StyleSheet.create({
     width: CIRCLE,
     height: CIRCLE,
     borderRadius: CIRCLE / 2,
-    backgroundColor: colors.amber,
+    backgroundColor: c.amber,
     alignItems: "center",
     justifyContent: "center",
   },

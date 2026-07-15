@@ -8,7 +8,7 @@ import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-na
 
 import { ProgressBar } from "@/components/ProgressBar";
 import { images } from "@/constants/images";
-import { colors, fontFamily, radii, typeScale } from "@/theme";
+import { fontFamily, radii, typeScale, useThemedStyles, type ThemeColors } from "@/theme";
 
 type DailyGoalCardProps = {
   /** XP earned today. */
@@ -20,6 +20,7 @@ type DailyGoalCardProps = {
 };
 
 export function DailyGoalCard({ current, goal, style }: DailyGoalCardProps) {
+  const styles = useThemedStyles(makeStyles);
   const progress = goal > 0 ? current / goal : 0;
 
   return (
@@ -40,11 +41,12 @@ export function DailyGoalCard({ current, goal, style }: DailyGoalCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.hero,
     paddingVertical: 18,
     paddingHorizontal: 18,
@@ -57,7 +59,7 @@ const styles = StyleSheet.create({
   },
   textCol: { flex: 1 },
   label: {
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.body.size,
   },
@@ -67,13 +69,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   value: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h2.size,
     lineHeight: typeScale.h2.size,
   },
   goal: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.h4.size,
   },

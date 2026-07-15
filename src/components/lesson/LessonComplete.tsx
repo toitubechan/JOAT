@@ -20,7 +20,15 @@ import { PrimaryButton } from "@/components/PrimaryButton";
 import { images } from "@/constants/images";
 import { useCountUp } from "@/hooks/animations";
 import { heroMascotForCategory } from "@/lib/feed";
-import { colors, fontFamily, radii, spacing, typeScale } from "@/theme";
+import {
+  fontFamily,
+  radii,
+  spacing,
+  typeScale,
+  useTheme,
+  useThemedStyles,
+  type ThemeColors,
+} from "@/theme";
 import type { Lesson } from "@/types/content";
 
 type LessonCompleteProps = {
@@ -50,6 +58,8 @@ export function LessonComplete({
   onWatchAd,
   rewardCoins = 0,
 }: LessonCompleteProps) {
+  const c = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
 
   // Rewarded-ad button state: "loading" while the ad plays, then the one-time
@@ -128,7 +138,7 @@ export function LessonComplete({
               (adLoading || claimedCoins !== null) && styles.watchAdDone,
             ]}
           >
-            <Image source={images.playWhite} style={styles.watchAdIcon} contentFit="contain" />
+            <Image source={images.playWhite} style={styles.watchAdIcon} contentFit="contain" tintColor={c.txt} />
             <Text style={styles.watchAdLabel}>
               {claimedCoins !== null
                 ? `+${claimedCoins} coins added`
@@ -147,31 +157,32 @@ export function LessonComplete({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.ink,
+    backgroundColor: c.ink,
     paddingHorizontal: spacing.screen,
     justifyContent: "space-between",
   },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   mascot: { width: 160, height: 160, marginBottom: 8 },
   title: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: typeScale.h1.family,
     fontSize: typeScale.h1.size,
     lineHeight: typeScale.h1.lineHeight,
     textAlign: "center",
   },
   subtitle: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.medium,
     fontSize: typeScale.body.size,
     marginTop: 6,
     textAlign: "center",
   },
   refresher: {
-    color: colors.txtSecondary,
+    color: c.txtSecondary,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.body.size,
     lineHeight: typeScale.body.lineHeight,
@@ -189,20 +200,20 @@ const styles = StyleSheet.create({
   stat: {
     flex: 1,
     alignItems: "center",
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.card,
     paddingVertical: 18,
   },
   statIcon: { width: 26, height: 26, marginBottom: 8 },
   statValue: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.bold,
     fontSize: typeScale.h3.size,
   },
   statLabel: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.caption.size,
     marginTop: 2,
@@ -216,15 +227,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     borderRadius: radii.card,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
   },
   watchAdDone: { opacity: 0.6 },
   pressed: { opacity: 0.8 },
   watchAdIcon: { width: 18, height: 18 },
   watchAdLabel: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.body.size,
   },

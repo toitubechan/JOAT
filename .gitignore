@@ -46,3 +46,14 @@ example
 .claude/
 .agents/
 skills-lock.json
+
+# local content-generation tooling + design references (not part of the app build)
+image-pipeline/
+prompt_material/
+
+# local release/setup artifacts
+.playwright-cli/
+play-store-assets/
+tmp/
+*.apk
+*.log

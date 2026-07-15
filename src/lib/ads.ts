@@ -83,6 +83,33 @@ function ensureAdsInit(): void {
   gma.default().initialize();
 }
 
+// --- Consent (GDPR / UMP) --------------------------------------------------
+
+/** Whether ad consent has already been gathered this session. */
+let consentGathered = false;
+
+/**
+ * Gather GDPR / UMP ad consent before requesting ads — Google's User Messaging
+ * Platform. Shows the consent form only where required (EEA users) and only once
+ * a consent message is configured in the AdMob console (Privacy & messaging);
+ * a no-op on the stub (Expo Go), outside the EEA, or when no message is set up.
+ *
+ * Fails open — a consent hiccup never blocks ads or the app (the SDK then serves
+ * non-personalized ads). Call it once before the first ad load; safe to repeat.
+ */
+export async function gatherAdsConsent(): Promise<void> {
+  if (!gma || consentGathered) return;
+  consentGathered = true;
+  try {
+    // Requests the latest consent info and shows the form if the user's region
+    // requires it. Personalized vs. non-personalized is then handled by the SDK.
+    await gma.AdsConsent.gatherConsent();
+  } catch (e) {
+    consentGathered = false; // allow a later retry
+    if (__DEV__) console.warn("[ads] consent gathering failed", e);
+  }
+}
+
 // --- Ad unit ids -----------------------------------------------------------
 
 /** Google's official sample ad unit ids — safe ONLY in development. */

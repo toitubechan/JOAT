@@ -11,7 +11,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { images } from "@/constants/images";
 import type { Category } from "@/data/topics";
-import { categoryColors, colors, fontFamily, radii, typeScale } from "@/theme";
+import { categoryColors, fontFamily, radii, typeScale, useThemedStyles, type ThemeColors } from "@/theme";
 
 type CategoryCardProps = {
   category: Category;
@@ -30,6 +30,7 @@ export function CategoryCard({
   proUnlocked = false,
   onPress,
 }: CategoryCardProps) {
+  const styles = useThemedStyles(makeStyles);
   // Coin-locked unless the user owns Pro (Pro unlocks all content).
   const locked = category.coinCost != null && !proUnlocked;
   const tile = categoryColors[category.slug];
@@ -68,18 +69,19 @@ export function CategoryCard({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   card: {
     minHeight: 132,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1.5,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.card,
     padding: 14,
   },
   cardSelected: {
     borderWidth: 2,
-    borderColor: colors.amber,
+    borderColor: c.amber,
     backgroundColor: "#231F14", // amber-tinted ink for the selected state
   },
   pressed: { opacity: 0.85 },
@@ -95,14 +97,14 @@ const styles = StyleSheet.create({
   icon: { width: "100%", height: "100%" },
 
   name: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: 16,
     lineHeight: 21,
     marginTop: 14,
   },
   count: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
     lineHeight: typeScale.bodySm.lineHeight,
@@ -116,7 +118,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: colors.amber,
+    backgroundColor: c.amber,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -129,14 +131,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: colors.line,
+    backgroundColor: c.line,
     borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
   coinIcon: { width: 14, height: 14 },
   coinText: {
-    color: colors.coin,
+    color: c.coin,
     fontFamily: fontFamily.semibold,
     fontSize: 12,
   },

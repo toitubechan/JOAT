@@ -14,7 +14,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { FeedImage } from "@/components/FeedImage";
 import { images } from "@/constants/images";
 import type { FeedItem } from "@/lib/feed";
-import { colors, fontFamily, radii, typeScale } from "@/theme";
+import { fontFamily, radii, typeScale, useThemedStyles, type ThemeColors } from "@/theme";
 
 // Empty-ring stroke (spec color; not a named token).
 const RING = "#3A4258";
@@ -35,6 +35,7 @@ type LessonListItemProps = {
 };
 
 function LessonListItemBase({ item, status, onPress }: LessonListItemProps) {
+  const styles = useThemedStyles(makeStyles);
   const { lesson, categoryLabel, bg, xp } = item;
 
   // The lesson-specific title is the subtitle (the topic is shared across many
@@ -81,14 +82,15 @@ function LessonListItemBase({ item, status, onPress }: LessonListItemProps) {
 
 export const LessonListItem = memo(LessonListItemBase);
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ThemeColors) =>
+  StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: c.line,
     borderRadius: radii.input,
     padding: 14,
     // Soft Android elevation so cards lift off the ink background.
@@ -108,19 +110,19 @@ const styles = StyleSheet.create({
 
   body: { flex: 1 },
   title: {
-    color: colors.txt,
+    color: c.txt,
     fontFamily: fontFamily.semibold,
     fontSize: typeScale.h4.size,
     lineHeight: 21,
   },
   meta: {
-    color: colors.txtMuted,
+    color: c.txtMuted,
     fontFamily: fontFamily.regular,
     fontSize: typeScale.bodySm.size,
     marginTop: 3,
   },
   xp: {
-    color: colors.amber,
+    color: c.amber,
     fontFamily: fontFamily.semibold,
   },
 
@@ -128,7 +130,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: colors.success,
+    backgroundColor: c.success,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -145,7 +147,7 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: colors.amber,
+    borderColor: c.amber,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -153,6 +155,6 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.amber,
+    backgroundColor: c.amber,
   },
 });
