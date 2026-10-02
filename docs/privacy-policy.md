@@ -1,140 +1,104 @@
-# Privacy Policy — Joat (Jack of All Trades)
+# Privacy Policy — JOAT (Jack of All Trades)
 
-> **This is a template/draft, not legal advice.** Fill in every `[BRACKETED]`
-> placeholder, review it against how your app actually behaves, and have a
-> qualified professional check it before you publish. Google Play requires a
-> **publicly hosted URL** for this policy (e.g. GitHub Pages) that you link in
-> both the Play listing and the app.
-
-**Effective date:** July 15, 2026
-**App:** Joat (Jack of All Trades) — Android
+**Effective date:** October 2, 2026
+**App:** JOAT (Jack of All Trades) for Android
 **Developer:** toitubechan
 **Contact:** toitubechan@gmail.com
 
----
+## What JOAT does
 
-## Overview
+JOAT teaches practical life skills through lessons, quizzes, and a progress
+system. This policy describes the information used to run your account, sync
+your progress, improve the app, show ads to free users, and handle purchases.
 
-Joat is a micro-learning app that teaches practical life skills through a
-card-based feed, quizzes, and a coins/XP/streak progression. This policy explains
-what data the app collects, why, who it is shared with, and your choices.
+## Information used by JOAT
 
-We keep data collection to what the app needs to function. Your learning progress
-is stored **on your device**; the only data that leaves your device is what the
-third-party services below require to provide authentication, analytics, ads
-(free users only), and purchases.
+- **Account:** When you sign up with email/password or Google, Firebase
+  Authentication processes your email address, account identifier, and name or
+  profile details you provide through your chosen sign-in method. Google also
+  processes a Google sign-in under its own policy. JOAT does not receive your
+  Google password.
+- **Learning progress and preferences:** Coins, XP, streaks, completed and saved
+  lessons, quiz answers, selected topics, theme preference, and Explore World
+  progress (including discoveries and positions in the virtual world) are stored
+  on your device and synced to two per-account documents in Google Cloud
+  Firestore so they can be restored on another device. These virtual-world
+  positions are not your phone's physical location. Lessons, card images, and
+  3D World content are bundled in the app; they are not uploaded as user data
+  for this sync.
+- **Analytics:** When configured, PostHog receives a JOAT account identifier,
+  selected topic identifiers, Pro status, app/device details, and explicit
+  events such as lesson starts/completions, quiz answers, ad rewards, and Pro
+  purchases. Event details can include lesson/topic identifiers, answer
+  correctness, time spent, earned XP/coins, product identifier, and price.
+  General screen autocapture is disabled. These events help improve lessons
+  and performance.
+- **Ads:** Google AdMob may process an advertising ID and other device or
+  ad-interaction data to prepare, deliver, and measure ads. Ads are displayed
+  only to free users. Where applicable, JOAT asks for ad consent through
+  Google's consent flow. When that flow requires a way to review your choices,
+  **Settings → Ad privacy choices** opens the available privacy options.
+- **Purchases:** Google Play handles payment. RevenueCat uses your Firebase
+  account identifier and receives purchase and entitlement information needed
+  to grant and restore the one-time JOAT Pro purchase. JOAT does not receive
+  full payment-card details.
+- **Local sign-in state:** Firebase persists sign-in state on your device so you
+  can stay signed in. App data can remain on that device until the app data is
+  cleared or the app is uninstalled.
 
-## Information we collect
+JOAT does not run a live AI service while you use lessons or Explore.
 
-**You provide it (account):**
-- **Email address and name** — when you create an account or sign in. Handled by
-  our authentication provider (Clerk).
+## Why we use this information
 
-**Collected automatically:**
-- **Usage & product analytics** — which screens and features you use, lessons
-  started/completed, quiz results, and basic device/app info (app version, device
-  model, OS version). Used to understand and improve the app. Handled by PostHog.
-  We send only specific events; we do **not** enable broad automatic capture.
-- **Advertising data (free users only)** — for users who have not purchased Pro,
-  our ads provider (Google AdMob) may access your device's **advertising ID** and
-  related device info to serve and measure ads. **Pro users see no ads.**
-- **Purchase status** — if you buy Joat Pro, our purchases provider (RevenueCat)
-  and the Google Play Store process the transaction and your entitlement status.
-  We never receive or store your full payment card details.
+We use account data to sign you in, progress data to sync your learning, analytics
+to improve the app, ad data to support free access, and purchase data to provide
+and restore Pro. We do not sell your personal information.
 
-**Stored only on your device (not sent to us):**
-- Your **progress and preferences** — coins, XP, level, streak, completed lessons,
-  saved lessons, chosen categories, and theme — via local storage (AsyncStorage).
-- Your **session token**, stored securely on the device to keep you signed in.
+## Service providers
 
-## How we use your information
-
-- To provide and secure your account and keep you signed in.
-- To deliver lessons and save your progress.
-- To measure and improve app performance and content.
-- To show ads to free users and to offer/manage the Pro upgrade.
-- To comply with legal obligations.
-
-We do **not** sell your personal information.
-
-## Third-party services (sub-processors)
-
-The app shares the limited data described above with these providers, each under
-their own privacy policy:
-
-| Provider | Purpose | Their policy |
+| Provider | Purpose | Privacy policy |
 | --- | --- | --- |
-| **Clerk** | Authentication / accounts | https://clerk.com/legal/privacy |
-| **PostHog** | Product analytics | https://posthog.com/privacy |
-| **Google AdMob** | Ads (free users only) | https://policies.google.com/privacy |
-| **RevenueCat** | Purchase / subscription management | https://www.revenuecat.com/privacy |
-| **Google Play** | App distribution & billing | https://policies.google.com/privacy |
+| Firebase Authentication / Google | Accounts and Google sign-in | https://policies.google.com/privacy |
+| Google Cloud Firestore | Progress and preference sync | https://policies.google.com/privacy |
+| PostHog | Product analytics, if configured | https://posthog.com/privacy |
+| Google AdMob | Ad requests and measurement; ads shown only to free users | https://policies.google.com/privacy |
+| RevenueCat | Purchase and entitlement management | https://www.revenuecat.com/privacy-policy |
+| Google Play | App distribution and billing | https://policies.google.com/privacy |
 
-## Advertising & consent
+## Data retention and deletion
 
-Free users are shown ads via Google AdMob (occasional full-screen ads between
-lessons and optional "watch to earn coins" ads). Where required by law (e.g. the
-EEA/UK under GDPR), the app presents a **consent prompt** (Google's User Messaging
-Platform) before serving personalized ads, and respects your choice. You can
-remove all ads by purchasing **Joat Pro**.
+On-device data remains until JOAT clears it, you clear JOAT's app data, or you
+uninstall the app. Synced progress remains in Firestore while the account is
+active. Firebase Authentication, Firestore, PostHog, and RevenueCat records are
+handled through our deletion process; deleting only the Firebase Auth account
+does not automatically remove the other records. We may retain limited records
+when required for legal, security, fraud-prevention, or financial reasons. The
+records retained and the reason for retention will be explained when we process
+a deletion request.
 
-## Children
+To request deletion of your account and associated personal data, use the
+[JOAT Account Deletion instructions](./account-deletion.md) or email
+toitubechan@gmail.com. You can ask about access, correction, or other applicable
+privacy rights at that address. Clearing app data on one phone does not delete
+the Firestore copy or provider records.
 
-Joat is intended for a **general audience** and is **not directed to children
-under 13**. We do not knowingly collect personal information
-from children. If you believe a child has provided us data, contact us and we will
-delete it.
+We complete verified account and associated data deletion requests within
+**30 days after verifying account ownership** and confirm the outcome by email.
+Deleting a JOAT account does not delete your Google account or accounts in
+other apps.
 
-## Data retention
+Deleting a JOAT account does not refund or erase a Google Play purchase record.
+Contact us about JOAT Pro access, or use Google Play's purchase support for a
+refund request. Google Play may retain purchase records under its own rules.
 
-- On-device data (progress, preferences) remains until you clear it, sign out
-  where applicable, or uninstall the app.
-- Account and analytics data is retained by our providers for as long as your
-  account is active or as needed to provide the service, then deleted or
-  anonymized per their policies.
+## Security, children, and changes
 
-## Your rights & choices
-
-Depending on your region (e.g. **GDPR** in the EEA/UK, **CCPA/CPRA** in
-California), you may have the right to access, correct, delete, or export your
-personal data, and to object to or restrict certain processing.
-
-- **Delete your account/data:** follow the instructions in our
-  [Account Deletion Guide](./account-deletion.md) or contact us at
-  toitubechan@gmail.com.
-- **Ad choices:** reset or limit your advertising ID in your device settings, and
-  use the in-app consent controls where shown.
-
-## Security
-
-We use reasonable technical measures to protect your data (e.g. secure device
-storage for your session token, encrypted transport to our providers). No method
-of transmission or storage is 100% secure.
-
-## Changes to this policy
-
-We may update this policy from time to time. Material changes will be reflected by
-updating the "Effective date" above and, where appropriate, an in-app notice.
+We use transport encryption provided by our service providers and Android app
+storage for local data. No method of storage or transmission is completely
+secure. JOAT is intended for a general audience and is not directed to children
+under 13. If you think a child has supplied personal data, contact us to request
+deletion. We will update this page and its effective date when the policy changes.
 
 ## Contact
 
-Questions or requests: **toitubechan@gmail.com** — toitubechan.
-
----
-
-## Appendix — Play "Data safety" form cheat-sheet
-
-Use this to fill Google Play Console → **App content → Data safety** (verify each
-against your final build):
-
-- **Personal info → Email address / Name:** Collected, shared with Clerk. Required
-  for account.
-- **App activity / App info & performance:** Collected (usage events, crash/perf,
-  device info) — PostHog. Used for Analytics / App functionality.
-- **Device or other IDs (Advertising ID):** Collected for **free users** — AdMob.
-  Used for Advertising. Declare this only if you ship ads.
-- **Purchases:** Purchase history / entitlement — RevenueCat + Google Play. Used
-  for App functionality.
-- **Data encrypted in transit:** Yes.
-- **Users can request deletion:** Yes (provide the contact method above).
-- Declare AdMob/analytics data as **shared** with third parties as applicable.
+Questions and privacy requests: **toitubechan@gmail.com**.
